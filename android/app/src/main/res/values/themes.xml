@@ -1,0 +1,3 @@
+<resources>
+    <style name="Theme.EjunzNode" parent="android:style/Theme.Material.Light.NoActionBar" />
+</resources>
