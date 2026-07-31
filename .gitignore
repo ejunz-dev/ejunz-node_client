@@ -1,46 +1,29 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
-# dependencies
-node_modules/
-
 # Claude Code / OMC local state
 .claude/
 .omc/
 
-# Expo
-.expo/
-dist/
-dist-ios/
-web-build/
-expo-env.d.ts
-
-# Native
-.kotlin/
-*.orig.*
-*.jks
-*.p8
+# macOS / Xcode
+.DS_Store
+DerivedData/
+*.xcuserstate
+xcuserdata/
+build/
 *.p12
-*.key
 *.mobileprovision
 
-# Metro
-.metro-health-check*
+# Android / Gradle
+.gradle/
+local.properties
+**/build/
+*.iml
+.idea/
+.cxx/
+.externalNativeBuild/
 
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
-
-# macOS
-.DS_Store
-*.pem
-
-# local env files
-.env*.local
-
-# typescript
-*.tsbuildinfo
-
-# generated native folders
-/ios
-/android
+# Secrets and local config
+.env
+.env.*
+!.env.example
+*.keystore
+*.jks
+node_modules
