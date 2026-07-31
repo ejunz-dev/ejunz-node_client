@@ -1,43 +1,47 @@
-# Ejunz Node Mobile Client
+# Ejunz Node Native Mobile Client
 
-iOS/Android mobile dashboard for connecting to an `ejunz-node` instance and controlling Zigbee2MQTT devices.
+iOS/Android 原生客户端，用于连接 `ejunz-node` 并控制 Zigbee2MQTT 设备。
 
-## Stack
+## 技术栈
 
-- Expo SDK 57
-- React Native 0.86
-- TypeScript
-- Expo SecureStore for saved credentials
+- iOS：Swift、SwiftUI、URLSession、Keychain
+- Android：Kotlin、Jetpack Compose、HttpURLConnection、DataStore/Keystore
+- 不使用 Expo、React Native 或 MCP
 
-## Run locally
+## iOS
 
-```bash
-npm install
-npm start
+需要 macOS 和 Xcode。创建一个名为 `EjunzNode` 的 SwiftUI App，然后将 `ios/EjunzNode/` 下的 Swift 文件加入 Xcode target。
+
+```text
+ios/EjunzNode/EjunzNodeApp.swift
+ios/EjunzNode/Models/NodeModels.swift
+ios/EjunzNode/Services/NodeAPI.swift
+ios/EjunzNode/Services/KeychainStore.swift
+ios/EjunzNode/Services/AppModel.swift
+ios/EjunzNode/Views/ConnectView.swift
+ios/EjunzNode/Views/DashboardView.swift
 ```
 
-Then open the project with Expo Go, an Android emulator, or an iOS simulator.
+在 Xcode 中选择 iPhone Simulator 或真机运行。
 
-```bash
-npm run android
-npm run ios
-```
+## Android
 
-The phone and `ejunz-node` must be reachable on the same LAN for a local HTTP URL such as `http://192.168.1.100:5284`.
+使用 Android Studio 打开 `android/`，等待 Gradle 同步后运行 `app`。
 
-## Current API contract
+当前 Android 工程最低支持 Android API 26。需要允许手机访问局域网内的 HTTP 节点地址。
 
-The first MVP talks to the existing REST endpoints (not MCP):
+## 后端 API
+
+客户端直接使用 REST API，不使用 MCP：
 
 - `GET /zigbee2mqtt/status`
 - `GET /zigbee2mqtt/devices`
 - `POST /zigbee2mqtt/device/:deviceId`
 
-The app sends HTTP Basic Authentication using the credentials entered on the connection screen. Production deployments should put `ejunz-node` behind HTTPS and enforce route-level authentication.
+当前 MVP 使用 HTTP Basic Auth。生产部署应在 `ejunz-node` 中增加正式的 `/api/mobile/*` token 认证和 HTTPS。
 
-## Planned next steps
+手机和节点在局域网时，地址应填写例如：
 
-- Replace Basic Auth with `/api/mobile/auth/login` and refresh tokens.
-- Add a dedicated `/api/mobile/*` API with stable normalized device models.
-- Add a separate mobile WebSocket for real-time state updates.
-- Add QR pairing and push notifications.
+```text
+http://192.168.1.100:5284
+```
