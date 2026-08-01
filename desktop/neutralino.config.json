@@ -1,0 +1,57 @@
+{
+  "$schema": "https://raw.githubusercontent.com/neutralinojs/neutralinojs/main/schemas/neutralino.config.schema.json",
+  "applicationId": "dev.ejunz.node.desktop",
+  "version": "1.0.0",
+  "defaultMode": "window",
+  "port": 5175,
+  "documentRoot": "/frontend/dist/",
+  "url": "/",
+  "enableServer": true,
+  "enableNativeAPI": true,
+  "tokenSecurity": "one-time",
+  "logging": {
+    "enabled": false,
+    "writeToLogFile": false
+  },
+  "nativeAllowList": [
+    "app.*",
+    "os.*",
+    "computer.*",
+    "filesystem.*",
+    "storage.*",
+    "debug.log"
+  ],
+  "modes": {
+    "window": {
+      "title": "Ejunz Edge Desktop",
+      "width": 1280,
+      "height": 800,
+      "minWidth": 900,
+      "minHeight": 600,
+      "center": true,
+      "fullScreen": false,
+      "alwaysOnTop": false,
+      "enableInspector": false,
+      "borderless": false,
+      "maximize": false,
+      "hidden": false,
+      "resizable": true,
+      "exitProcessOnClose": true
+    }
+  },
+  "cli": {
+    "binaryName": "ejunz-edge-desktop",
+    "resourcesPath": "/frontend/",
+    "extensionsPath": "/extensions/",
+    "binaryVersion": "5.5.0",
+    "clientVersion": "5.4.0",
+    "frontendLibrary": {
+      "projectPath": "/frontend/",
+      "initCommand": "yarn",
+      "devCommand": "yarn dev",
+      "buildCommand": "yarn build",
+      "patchFile": "/frontend/index.html",
+      "devUrl": "http://localhost:5174/"
+    }
+  }
+}

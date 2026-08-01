@@ -34,3 +34,9 @@ core.*
 
 # npm lockfile (we use yarn)
 package-lock.json
+
+# Desktop (Neutralino)
+desktop/bin/
+desktop/dist/
+desktop/frontend/dist/
+desktop/.tmp/
