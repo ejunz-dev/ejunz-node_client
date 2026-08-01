@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getServerUrl, loadCredentials, getSavedPassword, fetchNodes, fetchNodeDevices, controlDevice, EdgeNode, Device } from '../api';
+import { CapacitorWebsocket } from '@miaz/capacitor-websocket';
 
 const styles: Record<string, React.CSSProperties> = {
   headerRow: {
@@ -128,7 +129,7 @@ export default function Devices() {
     }
   }, [selectedNode]);
 
-  // WebSocket for real-time device state updates (fallback to polling)
+  // WebSocket for real-time device state updates (native plugin)
   useEffect(() => {
     if (!selectedNode || !serverUrl) return;
     loadDevices();
@@ -136,40 +137,28 @@ export default function Devices() {
 
     const wsUrl = serverUrl.replace(/^https?/, (m) => (m === 'https' ? 'wss' : 'ws'))
       + '/api/edge/ws?token=' + encodeURIComponent(getSavedPassword());
+    const WS_NAME = 'edge-devices';
 
-    let ws: WebSocket | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout>;
-    let pollTimer: ReturnType<typeof setInterval>;
-    let wsFailed = false;
+    let listeners: any[] = [];
 
-    function startPolling() {
-      setWsStatus('connected');
-      pollTimer = setInterval(() => {
-        fetchNodeDevices(selectedNode).then((data) => {
-          setDevices(data.devices || []);
-        }).catch(() => {});
-      }, 5000);
+    async function connect() {
+      setWsStatus('connecting');
+      try {
+        await CapacitorWebsocket.connect({ url: wsUrl, name: WS_NAME });
+      } catch {
+        // connect will fail silently; listeners handle events
+      }
     }
 
-    function connect() {
-      ws = new WebSocket(wsUrl);
-      setWsStatus('connecting');
-
-      const failTimer = setTimeout(() => {
-        if (ws?.readyState !== WebSocket.OPEN) {
-          wsFailed = true;
-          ws?.close();
-          setWsStatus('connected');
-          startPolling();
-        }
-      }, 5000);
-
-      ws.onopen = () => {
-        clearTimeout(failTimer);
-        clearInterval(pollTimer);
+    // Register listeners
+    async function registerListeners() {
+      const onConnected = await CapacitorWebsocket.addListener(`${WS_NAME}:connected`, () => {
         setWsStatus('connected');
-      };
-      ws.onmessage = (event) => {
+      });
+      listeners.push(onConnected);
+
+      const onMessage = await CapacitorWebsocket.addListener(`${WS_NAME}:message`, (event: any) => {
         try {
           const msg = JSON.parse(event.data);
           if (msg.type !== 'device_state') return;
@@ -184,18 +173,30 @@ export default function Devices() {
             ));
           }
         } catch {}
-      };
-      ws.onclose = () => {
-        clearTimeout(failTimer);
-        if (wsFailed) return;
+      });
+      listeners.push(onMessage);
+
+      const onDisconnected = await CapacitorWebsocket.addListener(`${WS_NAME}:disconnected`, () => {
         setWsStatus('disconnected');
         reconnectTimer = setTimeout(connect, 3000);
-      };
-      ws.onerror = () => ws?.close();
+      });
+      listeners.push(onDisconnected);
+
+      const onError = await CapacitorWebsocket.addListener(`${WS_NAME}:connecterror`, () => {
+        setWsStatus('disconnected');
+        reconnectTimer = setTimeout(connect, 3000);
+      });
+      listeners.push(onError);
     }
 
     connect();
-    return () => { clearTimeout(reconnectTimer); clearInterval(pollTimer); ws?.close(); };
+    registerListeners();
+
+    return () => {
+      clearTimeout(reconnectTimer);
+      listeners.forEach((l) => l.remove());
+      CapacitorWebsocket.disconnect({ name: WS_NAME });
+    };
   }, [selectedNode, serverUrl, loadDevices]);
 
   const handleToggle = async (device: Device) => {
