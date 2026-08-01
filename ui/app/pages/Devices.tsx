@@ -134,8 +134,7 @@ export default function Devices() {
     loadDevices();
     loadCredentials();
 
-    const loc = window.location;
-    const wsUrl = (loc.protocol === 'https:' ? 'wss://' : 'ws://') + loc.host + '/api/edge/ws?token=' + encodeURIComponent(getSavedPassword());
+    const wsUrl = serverUrl.replace(/^https?/, (m) => (m === 'https' ? 'wss' : 'ws')) + '/api/edge/ws?token=' + encodeURIComponent(getSavedPassword());
 
     let ws: WebSocket | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout>;
