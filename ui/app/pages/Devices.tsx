@@ -128,17 +128,47 @@ export default function Devices() {
     }
   }, [selectedNode]);
 
-  // Poll for device state updates (reliable fallback)
+  // WebSocket for real-time device state updates
   useEffect(() => {
     if (!selectedNode || !serverUrl) return;
     loadDevices();
-    setWsStatus('connected');
-    const interval = setInterval(() => {
-      fetchNodeDevices(selectedNode).then((data) => {
-        setDevices(data.devices || []);
-      }).catch(() => {});
-    }, 5000);
-    return () => clearInterval(interval);
+
+    const wsUrl = serverUrl.replace(/^https?/, (m) => (m === 'https' ? 'wss' : 'ws'))
+      + '/api/edge/ws?token=' + encodeURIComponent(getSavedPassword());
+
+    let ws: WebSocket | null = null;
+    let reconnectTimer: ReturnType<typeof setTimeout>;
+
+    function connect() {
+      ws = new WebSocket(wsUrl);
+      setWsStatus('connecting');
+
+      ws.onopen = () => { setWsStatus('connected'); };
+      ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.type !== 'device_state') return;
+          const parts = msg.topic?.split('/') || [];
+          if (parts[1] !== selectedNode || !parts[3]) return;
+          let payload = msg.payload;
+          if (typeof payload === 'string') { try { payload = JSON.parse(payload); } catch {} }
+          const newState = payload?.state === 'ON' ? 'ON' : payload?.state === 'OFF' ? 'OFF' : undefined;
+          if (newState) {
+            setDevices((prev) => prev.map((d) =>
+              d.deviceId === parts[3] ? { ...d, currentState: newState } : d
+            ));
+          }
+        } catch {}
+      };
+      ws.onclose = () => {
+        setWsStatus('disconnected');
+        reconnectTimer = setTimeout(connect, 3000);
+      };
+      ws.onerror = () => ws?.close();
+    }
+
+    connect();
+    return () => { clearTimeout(reconnectTimer); ws?.close(); };
   }, [selectedNode, serverUrl, loadDevices]);
 
   const handleToggle = async (device: Device) => {
