@@ -152,13 +152,22 @@ export default function Devices() {
       if (disposed) return;
       setWsStatus('connecting');
       console.log('[WS] connecting', safeWsUrl);
-      ws = new WebSocket(wsUrl);
+      let socket: WebSocket;
+      try {
+        socket = new WebSocket(wsUrl);
+      } catch (error) {
+        console.error('[WS] failed to create socket', error);
+        setWsStatus('disconnected');
+        scheduleReconnect();
+        return;
+      }
+      ws = socket;
 
-      ws.onopen = () => {
+      socket.onopen = () => {
         console.log('[WS] connected');
         setWsStatus('connected');
       };
-      ws.onmessage = (event) => {
+      socket.onmessage = (event) => {
         try {
           const msg = JSON.parse(event.data);
           if (msg.type !== 'device_state') return;
@@ -174,11 +183,11 @@ export default function Devices() {
           }
         } catch {}
       };
-      ws.onerror = (event) => {
+      socket.onerror = (event) => {
         console.error('[WS] error', event);
-        ws?.close();
+        socket.close();
       };
-      ws.onclose = (event) => {
+      socket.onclose = (event) => {
         console.warn('[WS] closed', event.code, event.reason);
         setWsStatus('disconnected');
         scheduleReconnect();
