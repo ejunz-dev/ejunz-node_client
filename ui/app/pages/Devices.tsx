@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getServerUrl, loadCredentials, getSavedPassword, fetchNodes, fetchNodeDevices, controlDevice, EdgeNode, Device } from '../api';
-import { CapacitorWebsocket } from '@miaz/capacitor-websocket';
 
 const styles: Record<string, React.CSSProperties> = {
   headerRow: {
@@ -129,51 +128,37 @@ export default function Devices() {
     }
   }, [selectedNode]);
 
-  // WebSocket for real-time device state updates (native Capacitor plugin)
+  // WebSocket for real-time device state updates (browser WebSocket)
   useEffect(() => {
     if (!selectedNode || !serverUrl) return;
     loadDevices();
     loadCredentials();
 
     const wsUrl = serverUrl.replace(/^https?/, (m) => (m === 'https' ? 'wss' : 'ws')) + '/api/edge/ws?token=' + encodeURIComponent(getSavedPassword());
-    const wsName = `edge-devices-${selectedNode}`;
-
+    const safeWsUrl = wsUrl.replace(/([?&]token=)[^&]*/, '$1***');
+    let ws: WebSocket | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
     let disposed = false;
-    let built = false;
-    let reconnectScheduled = false;
-    const listeners: Array<{ remove: () => void }> = [];
 
     function scheduleReconnect() {
-      if (disposed || reconnectScheduled) return;
-      reconnectScheduled = true;
+      if (disposed || reconnectTimer) return;
       reconnectTimer = setTimeout(() => {
-        reconnectScheduled = false;
+        reconnectTimer = undefined;
         connect();
       }, 3000);
     }
 
-    async function connect() {
+    function connect() {
       if (disposed) return;
       setWsStatus('connecting');
-      try {
-        if (!built) {
-          await CapacitorWebsocket.build({ url: wsUrl, name: wsName, headers: {} });
-          built = true;
-        }
-        await CapacitorWebsocket.connect({ name: wsName });
-      } catch (error) {
-        console.error('[WS] connect failed', error);
-        setWsStatus('disconnected');
-        scheduleReconnect();
-      }
-    }
+      console.log('[WS] connecting', safeWsUrl);
+      ws = new WebSocket(wsUrl);
 
-    async function registerListeners() {
-      listeners.push(await CapacitorWebsocket.addListener(`${wsName}:connected`, () => {
+      ws.onopen = () => {
+        console.log('[WS] connected');
         setWsStatus('connected');
-      }));
-      listeners.push(await CapacitorWebsocket.addListener(`${wsName}:message`, (event: { data: string }) => {
+      };
+      ws.onmessage = (event) => {
         try {
           const msg = JSON.parse(event.data);
           if (msg.type !== 'device_state') return;
@@ -188,33 +173,24 @@ export default function Devices() {
             ));
           }
         } catch {}
-      }));
-      listeners.push(await CapacitorWebsocket.addListener(`${wsName}:disconnected`, () => {
+      };
+      ws.onerror = (event) => {
+        console.error('[WS] error', event);
+        ws?.close();
+      };
+      ws.onclose = (event) => {
+        console.warn('[WS] closed', event.code, event.reason);
         setWsStatus('disconnected');
         scheduleReconnect();
-      }));
-      listeners.push(await CapacitorWebsocket.addListener(`${wsName}:connecterror`, (event: { exception: string }) => {
-        console.error('[WS] connect error', event.exception);
-        setWsStatus('disconnected');
-        scheduleReconnect();
-      }));
-      listeners.push(await CapacitorWebsocket.addListener(`${wsName}:error`, (event: { cause: string }) => {
-        console.error('[WS] error', event.cause);
-      }));
-      if (!disposed) connect();
+      };
     }
 
-    registerListeners().catch((error) => {
-      console.error('[WS] listener registration failed', error);
-      setWsStatus('disconnected');
-      scheduleReconnect();
-    });
-
+    connect();
     return () => {
       disposed = true;
       if (reconnectTimer) clearTimeout(reconnectTimer);
-      listeners.forEach((listener) => listener.remove());
-      CapacitorWebsocket.disconnect({ name: wsName }).catch(() => {});
+      ws?.close();
+      ws = null;
     };
   }, [selectedNode, serverUrl, loadDevices]);
 
