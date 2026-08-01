@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getServerUrl, getSavedUsername, getSavedPassword, fetchNodes, fetchNodeDevices, controlDevice, EdgeNode, Device } from '../api';
+import { getServerUrl, loadCredentials, getSavedPassword, fetchNodes, fetchNodeDevices, controlDevice, EdgeNode, Device } from '../api';
 
 const styles: Record<string, React.CSSProperties> = {
   headerRow: {
@@ -132,6 +132,7 @@ export default function Devices() {
   useEffect(() => {
     if (!selectedNode || !serverUrl) return;
     loadDevices();
+    loadCredentials(); // ensure password is loaded for WS token
 
     const wsUrl = serverUrl.replace(/^https?/, (m) => (m === 'https' ? 'wss' : 'ws'))
       + '/api/edge/ws?token=' + encodeURIComponent(getSavedPassword());
