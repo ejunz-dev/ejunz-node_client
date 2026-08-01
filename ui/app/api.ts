@@ -110,22 +110,24 @@ export function getSavedPassword() {
 /* ===== API Helper ===== */
 
 export async function api<T>(path: string, options?: RequestInit): Promise<T> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-  if (_username || _password) {
-    headers['Authorization'] = 'Basic ' + btoa(`${_username}:${_password}`);
-  }
+  const hasBody = options?.body !== undefined;
   const extraHeaders = options?.headers instanceof Headers
     ? Object.fromEntries(options.headers.entries())
     : (options?.headers as Record<string, string> | undefined);
-  const mergedHeaders = { ...headers, ...extraHeaders };
   const url = _serverUrl + path;
 
   if (!Capacitor.isNativePlatform()) {
-    const response = await fetch(url, {
+    // Browser CORS requests use the query token instead of an Authorization header.
+    // This keeps GET requests simple and avoids an unnecessary preflight.
+    const browserUrl = new URL(url);
+    if (_password) browserUrl.searchParams.set('token', _password);
+    const browserHeaders = {
+      ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
+      ...extraHeaders,
+    };
+    const response = await fetch(browserUrl.toString(), {
       ...options,
-      headers: mergedHeaders,
+      headers: browserHeaders,
     });
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
@@ -134,11 +136,17 @@ export async function api<T>(path: string, options?: RequestInit): Promise<T> {
     return response.json() as Promise<T>;
   }
 
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (_username || _password) {
+    headers['Authorization'] = 'Basic ' + btoa(`${_username}:${_password}`);
+  }
   const response = await CapacitorHttp.request({
     url,
     method: options?.method || 'GET',
-    headers: mergedHeaders,
-    ...(options?.body === undefined ? {} : { data: options.body }),
+    headers: { ...headers, ...extraHeaders },
+    ...(hasBody ? { data: options.body } : {}),
     responseType: 'json',
   });
   if (response.status < 200 || response.status >= 300) {
