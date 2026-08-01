@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getServerUrl, getSavedUsername, getSavedPassword, fetchNodes, fetchNodeDevices, controlDevice, EdgeNode, Device } from '../api';
+import { getServerUrl, getSavedPassword, fetchNodes, fetchNodeDevices, controlDevice, EdgeNode, Device } from '../api';
 
 const styles: Record<string, React.CSSProperties> = {
   headerRow: {
@@ -135,17 +135,14 @@ export default function Devices() {
     // Initial load
     loadDevices();
 
-    // Connect WebSocket
-    const wsUrl = serverUrl.replace(/^http/, 'ws') + '/api/edge/ws';
-    const username = getSavedUsername();
-    const password = getSavedPassword();
-    const auth = btoa(`${username}:${password}`);
+    // Connect WebSocket (use token query param, WebSocket API doesn't support custom headers)
+    const wsUrl = serverUrl.replace(/^http/, 'ws') + '/api/edge/ws?token=' + encodeURIComponent(getSavedPassword());
 
     let ws: WebSocket | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout>;
 
     function connect() {
-      ws = new WebSocket(wsUrl, [], { headers: { Authorization: `Basic ${auth}` } } as any);
+      ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = () => console.log('WS connected');
