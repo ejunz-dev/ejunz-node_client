@@ -158,7 +158,7 @@ export default function Devices() {
       setWsStatus('connecting');
       try {
         if (!built) {
-          await CapacitorWebsocket.build({ url: wsUrl, name: wsName });
+          await CapacitorWebsocket.build({ url: wsUrl, name: wsName, headers: {} });
           built = true;
         }
         await CapacitorWebsocket.connect({ name: wsName });
