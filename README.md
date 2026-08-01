@@ -1,47 +1,100 @@
-# Ejunz Node Native Mobile Client
+# Ejunz Edge Client
 
-iOS/Android 原生客户端，用于连接 `ejunz-node` 并控制 Zigbee2MQTT 设备。
+iOS/Android client for connecting to an `ejunz-node` **Edge** server, managing remote nodes, and controlling Zigbee devices.
 
-## 技术栈
+Built with **CapacitorJS** + **Vite** + **React/TypeScript** — one codebase for both iOS and Android.
 
-- iOS：Swift、SwiftUI、URLSession、Keychain
-- Android：Kotlin、Jetpack Compose、HttpURLConnection、DataStore/Keystore
-- 不使用 Expo、React Native 或 MCP
+## Tech Stack
 
-## iOS
+- **Frontend**: React 18 + TypeScript + React Router
+- **Build**: Vite 6 (`@vitejs/plugin-react`, HMR)
+- **Shell**: CapacitorJS 7 (iOS: WKWebView / Android: WebView)
+- **API**: Edge REST API (`/api/edge/*`, HTTP Basic Auth)
+- **Storage**: `localStorage` (connection credentials)
 
-需要 macOS 和 Xcode。创建一个名为 `EjunzNode` 的 SwiftUI App，然后将 `ios/EjunzNode/` 下的 Swift 文件加入 Xcode target。
+## Quick Start
 
-```text
-ios/EjunzNode/EjunzNodeApp.swift
-ios/EjunzNode/Models/NodeModels.swift
-ios/EjunzNode/Services/NodeAPI.swift
-ios/EjunzNode/Services/KeychainStore.swift
-ios/EjunzNode/Services/AppModel.swift
-ios/EjunzNode/Views/ConnectView.swift
-ios/EjunzNode/Views/DashboardView.swift
+```bash
+# Install dependencies
+yarn install
+
+# Build the frontend
+yarn build
+
+# Sync to native platforms
+yarn sync
+
+# Open native IDE
+yarn open ios      # macOS + Xcode
+yarn open android   # Android Studio
 ```
 
-在 Xcode 中选择 iPhone Simulator 或真机运行。
+## Development (Hot Reload)
 
-## Android
+```bash
+# Start Vite dev server (port 3000, HMR, API proxy to :5283)
+yarn dev
 
-使用 Android Studio 打开 `android/`，等待 Gradle 同步后运行 `app`。
-
-当前 Android 工程最低支持 Android API 26。需要允许手机访问局域网内的 HTTP 节点地址。
-
-## 后端 API
-
-客户端直接使用 REST API，不使用 MCP：
-
-- `GET /zigbee2mqtt/status`
-- `GET /zigbee2mqtt/devices`
-- `POST /zigbee2mqtt/device/:deviceId`
-
-当前 MVP 使用 HTTP Basic Auth。生产部署应在 `ejunz-node` 中增加正式的 `/api/mobile/*` token 认证和 HTTPS。
-
-手机和节点在局域网时，地址应填写例如：
-
-```text
-http://192.168.1.100:5284
+# Open http://localhost:3000 in your browser
+# Changes to ui/app/ are hot-reloaded automatically
 ```
+
+Live reload on a native device:
+
+```bash
+# iOS simulator
+yarn cap:dev
+
+# Android emulator / device
+yarn cap:dev:android
+```
+
+## Project Structure
+
+```
+ui/                   ← React/TSX source (development directory)
+  app/
+    index.tsx         ← Entry point
+    App.tsx           ← Router + layout
+    api.ts            ← Edge API wrapper (/api/edge/*)
+    components/
+      Header.tsx      ← Navigation bar
+    pages/
+      Connect.tsx     ← Connect to Edge server
+      Dashboard.tsx   ← Overview (node stats, upstream status)
+      Nodes.tsx       ← Node management (authorize/revoke)
+      Devices.tsx     ← Device control (select node → toggle devices)
+  vite.config.ts      ← Vite config (proxy, output dir)
+  index.html          ← HTML entry
+  package.json        ← UI workspace dependencies
+  tsconfig.json
+www/                  ← Build output (Capacitor webDir)
+  index.html
+  assets/
+ios/                  ← Xcode project (Capacitor-generated)
+android/              ← Android Studio project (Capacitor-generated)
+capacitor.config.json ← Capacitor configuration
+package.json          ← Root workspace config
+```
+
+## Edge API
+
+The client manages the Edge server through its REST API:
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/edge/status` | Edge status (node count, broker, upstream) |
+| GET | `/api/edge/nodes` | List all registered nodes |
+| GET | `/api/edge/nodes/:nodeId/devices` | Zigbee devices behind a node |
+| POST | `/api/edge/nodes/:nodeId/devices/control` | Control a device (ON/OFF/TOGGLE) |
+| POST | `/api/edge/nodes/:nodeId/authorize` | Authorize a pending node |
+| POST | `/api/edge/nodes/:nodeId/revoke` | Revoke a node |
+| GET/POST | `/api/edge/auth-config` | Authentication configuration |
+| GET/POST | `/api/edge/upstream` | Upstream connection configuration |
+
+The MVP uses HTTP Basic Auth. Production deployments should use HTTPS.
+
+## Connection Addresses
+
+- LAN Edge: `http://192.168.1.100:5283`
+- Remote (via FRP): `http://47.86.164.129:10031`

@@ -1,0 +1,28 @@
+{
+  "name": "ejunz-node-client",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "yarn@4.2.0",
+  "workspaces": [
+    "ui"
+  ],
+  "scripts": {
+    "dev": "yarn workspace @ejunz/node-client-ui dev:ui",
+    "build": "yarn workspace @ejunz/node-client-ui build:ui",
+    "sync": "yarn exec cap sync",
+    "sync:ios": "yarn exec cap sync ios",
+    "sync:android": "yarn exec cap sync android",
+    "open:ios": "yarn exec cap open ios",
+    "open:android": "yarn exec cap open android",
+    "cap:dev": "yarn dev & sleep 2 && yarn exec cap run ios --livereload-url=http://localhost:3000",
+    "cap:dev:android": "yarn dev & sleep 2 && yarn exec cap run android --livereload-url=http://localhost:3000"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.6.8",
+    "@capacitor/core": "^7.6.8",
+    "@capacitor/ios": "^7.6.8"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.6.8"
+  }
+}
