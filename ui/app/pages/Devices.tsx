@@ -128,76 +128,59 @@ export default function Devices() {
     }
   }, [selectedNode]);
 
-  // SSE for real-time device state updates (via fetch streaming)
+  // WebSocket for real-time device state updates
   useEffect(() => {
     if (!selectedNode || !serverUrl) return;
 
     // Initial load
     loadDevices();
 
-    const sseUrl = serverUrl + '/api/edge/ws?token=' + encodeURIComponent(getSavedPassword());
-    let controller: AbortController | null = null;
+    // Fix: properly convert http→ws / https→wss
+    const wsUrl = serverUrl.replace(/^https?/, (m) => (m === 'https' ? 'wss' : 'ws')) + '/api/edge/ws?token=' + encodeURIComponent(getSavedPassword());
+
+    let ws: WebSocket | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout>;
 
-    async function connect() {
-      controller = new AbortController();
+    function connect() {
+      ws = new WebSocket(wsUrl);
       setWsStatus('connecting');
-      try {
-        const res = await fetch(sseUrl, {
-          headers: { Authorization: 'Basic ' + btoa(getSavedUsername() + ':' + getSavedPassword()) },
-          signal: controller.signal,
-        });
-        if (!res.ok || !res.body) throw new Error('SSE connection failed');
-        setWsStatus('connected');
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
-          for (const line of lines) {
-            if (!line.startsWith('data: ')) continue;
-            try {
-              const msg = JSON.parse(line.slice(6));
-              if (msg.type === 'device_state') {
-                const parts = msg.topic?.split('/') || [];
-                const topicNodeId = parts[1];
-                const deviceId = parts[3];
-                if (topicNodeId !== selectedNode || !deviceId) continue;
-                let payload = msg.payload;
-                if (typeof payload === 'string') {
-                  try { payload = JSON.parse(payload); } catch {}
-                }
-                const newState = payload?.state === 'ON' ? 'ON' : payload?.state === 'OFF' ? 'OFF' : undefined;
-                if (newState) {
-                  setDevices((prev) =>
-                    prev.map((d) =>
-                      d.deviceId === deviceId ? { ...d, currentState: newState } : d
-                    )
-                  );
-                }
-              }
-            } catch {}
+      ws.onopen = () => { console.log('WS connected'); setWsStatus('connected'); };
+      ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.type === 'device_state') {
+            const parts = msg.topic?.split('/') || [];
+            const topicNodeId = parts[1];
+            const deviceId = parts[3];
+            if (topicNodeId !== selectedNode || !deviceId) return;
+            let payload = msg.payload;
+            if (typeof payload === 'string') {
+              try { payload = JSON.parse(payload); } catch {}
+            }
+            const newState = payload?.state === 'ON' ? 'ON' : payload?.state === 'OFF' ? 'OFF' : undefined;
+            if (newState) {
+              setDevices((prev) =>
+                prev.map((d) =>
+                  d.deviceId === deviceId ? { ...d, currentState: newState } : d
+                )
+              );
+            }
           }
-        }
-      } catch (err: any) {
-        if (err.name === 'AbortError') return;
-        console.error('SSE error', err);
-      }
-      setWsStatus('disconnected');
-      controller = null;
-      reconnectTimer = setTimeout(connect, 5000);
+        } catch {}
+      };
+      ws.onclose = () => {
+        setWsStatus('disconnected');
+        reconnectTimer = setTimeout(connect, 3000);
+      };
+      ws.onerror = () => ws?.close();
     }
 
     connect();
 
     return () => {
       clearTimeout(reconnectTimer);
-      controller?.abort();
+      ws?.close();
     };
   }, [selectedNode, serverUrl, loadDevices]);
 
