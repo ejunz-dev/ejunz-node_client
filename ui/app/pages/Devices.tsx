@@ -144,49 +144,62 @@ export default function Devices() {
 
     async function connect() {
       setWsStatus('connecting');
+      console.log('[WS] connecting to', wsUrl);
       try {
         await CapacitorWebsocket.connect({ url: wsUrl, name: WS_NAME });
-      } catch {
+        console.log('[WS] connect() returned without error');
+      } catch (e) {
+        console.log('[WS] connect() failed:', e);
         // connect will fail silently; listeners handle events
       }
     }
 
     // Register listeners
     async function registerListeners() {
-      const onConnected = await CapacitorWebsocket.addListener(`${WS_NAME}:connected`, () => {
-        setWsStatus('connected');
-      });
-      listeners.push(onConnected);
+      console.log('[WS] registering listeners...');
+      try {
+        const onConnected = await CapacitorWebsocket.addListener(`${WS_NAME}:connected`, () => {
+          console.log('[WS] connected event');
+          setWsStatus('connected');
+        });
+        listeners.push(onConnected);
 
-      const onMessage = await CapacitorWebsocket.addListener(`${WS_NAME}:message`, (event: any) => {
-        try {
-          const msg = JSON.parse(event.data);
-          if (msg.type !== 'device_state') return;
-          const parts = msg.topic?.split('/') || [];
-          if (parts[1] !== selectedNode || !parts[3]) return;
-          let payload = msg.payload;
-          if (typeof payload === 'string') { try { payload = JSON.parse(payload); } catch {} }
-          const newState = payload?.state === 'ON' ? 'ON' : payload?.state === 'OFF' ? 'OFF' : undefined;
-          if (newState) {
-            setDevices((prev) => prev.map((d) =>
-              d.deviceId === parts[3] ? { ...d, currentState: newState } : d
-            ));
-          }
-        } catch {}
-      });
-      listeners.push(onMessage);
+        const onMessage = await CapacitorWebsocket.addListener(`${WS_NAME}:message`, (event: any) => {
+          console.log('[WS] message event:', event.data);
+          try {
+            const msg = JSON.parse(event.data);
+            if (msg.type !== 'device_state') return;
+            const parts = msg.topic?.split('/') || [];
+            if (parts[1] !== selectedNode || !parts[3]) return;
+            let payload = msg.payload;
+            if (typeof payload === 'string') { try { payload = JSON.parse(payload); } catch {} }
+            const newState = payload?.state === 'ON' ? 'ON' : payload?.state === 'OFF' ? 'OFF' : undefined;
+            if (newState) {
+              setDevices((prev) => prev.map((d) =>
+                d.deviceId === parts[3] ? { ...d, currentState: newState } : d
+              ));
+            }
+          } catch {}
+        });
+        listeners.push(onMessage);
 
-      const onDisconnected = await CapacitorWebsocket.addListener(`${WS_NAME}:disconnected`, () => {
-        setWsStatus('disconnected');
-        reconnectTimer = setTimeout(connect, 3000);
-      });
-      listeners.push(onDisconnected);
+        const onDisconnected = await CapacitorWebsocket.addListener(`${WS_NAME}:disconnected`, () => {
+          console.log('[WS] disconnected event');
+          setWsStatus('disconnected');
+          reconnectTimer = setTimeout(connect, 3000);
+        });
+        listeners.push(onDisconnected);
 
-      const onError = await CapacitorWebsocket.addListener(`${WS_NAME}:connecterror`, () => {
-        setWsStatus('disconnected');
-        reconnectTimer = setTimeout(connect, 3000);
-      });
-      listeners.push(onError);
+        const onError = await CapacitorWebsocket.addListener(`${WS_NAME}:connecterror`, (err: any) => {
+          console.log('[WS] connecterror event:', err);
+          setWsStatus('disconnected');
+          reconnectTimer = setTimeout(connect, 3000);
+        });
+        listeners.push(onError);
+        console.log('[WS] listeners registered');
+      } catch (e) {
+        console.log('[WS] registerListeners failed:', e);
+      }
     }
 
     connect();
