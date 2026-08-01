@@ -16,6 +16,7 @@ export default defineConfig({
       '/api/edge': {
         target: process.env.EDGE_API || 'http://localhost:5283',
         changeOrigin: true,
+        ws: true,
       },
     },
   },
