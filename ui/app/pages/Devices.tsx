@@ -148,10 +148,8 @@ export default function Devices() {
       ws.onmessage = (event) => {
         try {
           const msg = JSON.parse(event.data);
-          console.log('WS msg:', msg);
           if (msg.type !== 'device_state') return;
           const parts = msg.topic?.split('/') || [];
-          console.log('WS parts:', parts, 'selectedNode:', selectedNode);
           if (parts[1] !== selectedNode || !parts[3]) return;
           let payload = msg.payload;
           if (typeof payload === 'string') { try { payload = JSON.parse(payload); } catch {} }
