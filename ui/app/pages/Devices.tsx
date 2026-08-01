@@ -146,7 +146,9 @@ export default function Devices() {
       setWsStatus('connecting');
       console.log('[WS] connecting to', wsUrl);
       try {
-        await CapacitorWebsocket.connect({ url: wsUrl, name: WS_NAME });
+        // Plugin requires build() before connect()
+        await CapacitorWebsocket.build({ url: wsUrl, name: WS_NAME });
+        await CapacitorWebsocket.connect({ name: WS_NAME });
         console.log('[WS] connect() returned without error');
       } catch (e) {
         console.log('[WS] connect() failed:', e);
