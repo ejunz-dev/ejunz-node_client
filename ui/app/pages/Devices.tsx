@@ -128,60 +128,17 @@ export default function Devices() {
     }
   }, [selectedNode]);
 
-  // WebSocket for real-time device state updates
+  // Poll for device state updates (reliable fallback)
   useEffect(() => {
     if (!selectedNode || !serverUrl) return;
-
-    // Initial load
     loadDevices();
-
-    // Fix: properly convert http→ws / https→wss
-    const wsUrl = serverUrl.replace(/^https?/, (m) => (m === 'https' ? 'wss' : 'ws')) + '/api/edge/ws?token=' + encodeURIComponent(getSavedPassword());
-
-    let ws: WebSocket | null = null;
-    let reconnectTimer: ReturnType<typeof setTimeout>;
-
-    function connect() {
-      ws = new WebSocket(wsUrl);
-      setWsStatus('connecting');
-
-      ws.onopen = () => { console.log('WS connected'); setWsStatus('connected'); };
-      ws.onmessage = (event) => {
-        try {
-          const msg = JSON.parse(event.data);
-          if (msg.type === 'device_state') {
-            const parts = msg.topic?.split('/') || [];
-            const topicNodeId = parts[1];
-            const deviceId = parts[3];
-            if (topicNodeId !== selectedNode || !deviceId) return;
-            let payload = msg.payload;
-            if (typeof payload === 'string') {
-              try { payload = JSON.parse(payload); } catch {}
-            }
-            const newState = payload?.state === 'ON' ? 'ON' : payload?.state === 'OFF' ? 'OFF' : undefined;
-            if (newState) {
-              setDevices((prev) =>
-                prev.map((d) =>
-                  d.deviceId === deviceId ? { ...d, currentState: newState } : d
-                )
-              );
-            }
-          }
-        } catch {}
-      };
-      ws.onclose = () => {
-        setWsStatus('disconnected');
-        reconnectTimer = setTimeout(connect, 3000);
-      };
-      ws.onerror = () => ws?.close();
-    }
-
-    connect();
-
-    return () => {
-      clearTimeout(reconnectTimer);
-      ws?.close();
-    };
+    setWsStatus('connected');
+    const interval = setInterval(() => {
+      fetchNodeDevices(selectedNode).then((data) => {
+        setDevices(data.devices || []);
+      }).catch(() => {});
+    }, 5000);
+    return () => clearInterval(interval);
   }, [selectedNode, serverUrl, loadDevices]);
 
   const handleToggle = async (device: Device) => {
