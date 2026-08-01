@@ -128,23 +128,47 @@ export default function Devices() {
     }
   }, [selectedNode]);
 
-  // WebSocket for real-time device state updates
+  // WebSocket for real-time device state updates (fallback to polling)
   useEffect(() => {
     if (!selectedNode || !serverUrl) return;
     loadDevices();
-    loadCredentials(); // ensure password is loaded for WS token
+    loadCredentials();
 
     const wsUrl = serverUrl.replace(/^https?/, (m) => (m === 'https' ? 'wss' : 'ws'))
       + '/api/edge/ws?token=' + encodeURIComponent(getSavedPassword());
 
     let ws: WebSocket | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout>;
+    let pollTimer: ReturnType<typeof setInterval>;
+    let wsFailed = false;
+
+    function startPolling() {
+      setWsStatus('connected');
+      pollTimer = setInterval(() => {
+        fetchNodeDevices(selectedNode).then((data) => {
+          setDevices(data.devices || []);
+        }).catch(() => {});
+      }, 5000);
+    }
 
     function connect() {
       ws = new WebSocket(wsUrl);
       setWsStatus('connecting');
 
-      ws.onopen = () => { setWsStatus('connected'); };
+      const failTimer = setTimeout(() => {
+        if (ws?.readyState !== WebSocket.OPEN) {
+          wsFailed = true;
+          ws?.close();
+          setWsStatus('connected');
+          startPolling();
+        }
+      }, 5000);
+
+      ws.onopen = () => {
+        clearTimeout(failTimer);
+        clearInterval(pollTimer);
+        setWsStatus('connected');
+      };
       ws.onmessage = (event) => {
         try {
           const msg = JSON.parse(event.data);
@@ -162,6 +186,8 @@ export default function Devices() {
         } catch {}
       };
       ws.onclose = () => {
+        clearTimeout(failTimer);
+        if (wsFailed) return;
         setWsStatus('disconnected');
         reconnectTimer = setTimeout(connect, 3000);
       };
@@ -169,7 +195,7 @@ export default function Devices() {
     }
 
     connect();
-    return () => { clearTimeout(reconnectTimer); ws?.close(); };
+    return () => { clearTimeout(reconnectTimer); clearInterval(pollTimer); ws?.close(); };
   }, [selectedNode, serverUrl, loadDevices]);
 
   const handleToggle = async (device: Device) => {
