@@ -1,0 +1,20 @@
+{
+  "appId": "dev.ejunz.node",
+  "appName": "Ejunz Node",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "iosScheme": "https",
+    "allowNavigation": [
+      "*"
+    ]
+  },
+  "ios": {
+    "contentInset": "always",
+    "backgroundColor": "#1a1a2e"
+  },
+  "android": {
+    "backgroundColor": "#1a1a2e"
+  }
+}
