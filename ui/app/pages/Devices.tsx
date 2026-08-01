@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getServerUrl, fetchNodes, fetchNodeDevices, controlDevice, EdgeNode, Device } from '../api';
+import { getServerUrl, getSavedUsername, getSavedPassword, fetchNodes, fetchNodeDevices, controlDevice, EdgeNode, Device } from '../api';
 
 const styles: Record<string, React.CSSProperties> = {
   headerRow: {
@@ -88,6 +88,7 @@ export default function Devices() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(false);
   const [toggling, setToggling] = useState<Set<string>>(new Set());
+  const wsRef = useRef<WebSocket | null>(null);
   const serverUrl = getServerUrl();
 
   useEffect(() => {
@@ -113,7 +114,7 @@ export default function Devices() {
     return () => clearInterval(interval);
   }, [selectedNode]);
 
-  // Load devices for selected node
+  // Load devices for selected node (initial load via HTTP)
   const loadDevices = useCallback(async () => {
     if (!selectedNode) return;
     setLoading(true);
@@ -127,11 +128,68 @@ export default function Devices() {
     }
   }, [selectedNode]);
 
+  // WebSocket for real-time device state updates
   useEffect(() => {
+    if (!selectedNode || !serverUrl) return;
+
+    // Initial load
     loadDevices();
-    const interval = setInterval(loadDevices, 3000);
-    return () => clearInterval(interval);
-  }, [loadDevices]);
+
+    // Connect WebSocket
+    const wsUrl = serverUrl.replace(/^http/, 'ws') + '/api/edge/ws';
+    const username = getSavedUsername();
+    const password = getSavedPassword();
+    const auth = btoa(`${username}:${password}`);
+
+    let ws: WebSocket | null = null;
+    let reconnectTimer: ReturnType<typeof setTimeout>;
+
+    function connect() {
+      ws = new WebSocket(wsUrl, [], { headers: { Authorization: `Basic ${auth}` } } as any);
+      wsRef.current = ws;
+
+      ws.onopen = () => console.log('WS connected');
+      ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.type === 'device_state') {
+            // Extract nodeId and deviceId from topic: node/<nodeId>/devices/<deviceId>/state
+            const parts = msg.topic?.split('/') || [];
+            const topicNodeId = parts[1];
+            const deviceId = parts[3];
+            if (topicNodeId !== selectedNode || !deviceId) return;
+            // Parse payload to get state
+            let payload = msg.payload;
+            if (typeof payload === 'string') {
+              try { payload = JSON.parse(payload); } catch {}
+            }
+            const newState = payload?.state === 'ON' ? 'ON' : payload?.state === 'OFF' ? 'OFF' : undefined;
+            if (newState) {
+              setDevices((prev) =>
+                prev.map((d) =>
+                  d.deviceId === deviceId ? { ...d, currentState: newState } : d
+                )
+              );
+            }
+          }
+        } catch {}
+      };
+      ws.onclose = () => {
+        wsRef.current = null;
+        // Reconnect after 3s
+        reconnectTimer = setTimeout(connect, 3000);
+      };
+      ws.onerror = () => ws?.close();
+    }
+
+    connect();
+
+    return () => {
+      clearTimeout(reconnectTimer);
+      ws?.close();
+      wsRef.current = null;
+    };
+  }, [selectedNode, serverUrl, loadDevices]);
 
   const handleToggle = async (device: Device) => {
     if (!selectedNode || !device.deviceId || toggling.has(device.deviceId)) return;
