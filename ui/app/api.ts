@@ -1,4 +1,4 @@
-import { CapacitorHttp } from '@capacitor/core';
+import { Capacitor, CapacitorHttp } from '@capacitor/core';
 
 /* ===== Edge Mode API Types ===== */
 
@@ -119,10 +119,25 @@ export async function api<T>(path: string, options?: RequestInit): Promise<T> {
   const extraHeaders = options?.headers instanceof Headers
     ? Object.fromEntries(options.headers.entries())
     : (options?.headers as Record<string, string> | undefined);
+  const mergedHeaders = { ...headers, ...extraHeaders };
+  const url = _serverUrl + path;
+
+  if (!Capacitor.isNativePlatform()) {
+    const response = await fetch(url, {
+      ...options,
+      headers: mergedHeaders,
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body.error || `HTTP ${response.status}`);
+    }
+    return response.json() as Promise<T>;
+  }
+
   const response = await CapacitorHttp.request({
-    url: _serverUrl + path,
+    url,
     method: options?.method || 'GET',
-    headers: { ...headers, ...extraHeaders },
+    headers: mergedHeaders,
     ...(options?.body === undefined ? {} : { data: options.body }),
     responseType: 'json',
   });
