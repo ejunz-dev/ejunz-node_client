@@ -27,3 +27,10 @@ local.properties
 *.keystore
 *.jks
 node_modules
+
+# Core dumps
+core
+core.*
+
+# npm lockfile (we use yarn)
+package-lock.json
