@@ -1,3 +1,5 @@
+import { CapacitorHttp } from '@capacitor/core';
+
 /* ===== Edge Mode API Types ===== */
 
 export interface EdgeNode {
@@ -114,15 +116,21 @@ export async function api<T>(path: string, options?: RequestInit): Promise<T> {
   if (_username || _password) {
     headers['Authorization'] = 'Basic ' + btoa(`${_username}:${_password}`);
   }
-  const res = await fetch(_serverUrl + path, {
-    ...options,
-    headers: { ...headers, ...(options?.headers as Record<string, string> | undefined) },
+  const extraHeaders = options?.headers instanceof Headers
+    ? Object.fromEntries(options.headers.entries())
+    : (options?.headers as Record<string, string> | undefined);
+  const response = await CapacitorHttp.request({
+    url: _serverUrl + path,
+    method: options?.method || 'GET',
+    headers: { ...headers, ...extraHeaders },
+    ...(options?.body === undefined ? {} : { data: options.body }),
+    responseType: 'json',
   });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || `HTTP ${res.status}`);
+  if (response.status < 200 || response.status >= 300) {
+    const body = response.data || {};
+    throw new Error(body.error || `HTTP ${response.status}`);
   }
-  return res.json() as Promise<T>;
+  return response.data as T;
 }
 
 /* ===== Edge API Convenience Methods ===== */
