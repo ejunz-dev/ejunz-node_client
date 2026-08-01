@@ -88,6 +88,7 @@ export default function Devices() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(false);
   const [toggling, setToggling] = useState<Set<string>>(new Set());
+  const [wsStatus, setWsStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
   const wsRef = useRef<WebSocket | null>(null);
   const serverUrl = getServerUrl();
 
@@ -144,8 +145,9 @@ export default function Devices() {
     function connect() {
       ws = new WebSocket(wsUrl);
       wsRef.current = ws;
+      setWsStatus('connecting');
 
-      ws.onopen = () => console.log('WS connected');
+      ws.onopen = () => { console.log('WS connected'); setWsStatus('connected'); };
       ws.onmessage = (event) => {
         try {
           const msg = JSON.parse(event.data);
@@ -173,10 +175,11 @@ export default function Devices() {
       };
       ws.onclose = () => {
         wsRef.current = null;
+        setWsStatus('disconnected');
         // Reconnect after 3s
         reconnectTimer = setTimeout(connect, 3000);
       };
-      ws.onerror = () => ws?.close();
+      ws.onerror = (e) => { console.error('WS error', e); ws?.close(); };
     }
 
     connect();
@@ -212,7 +215,12 @@ export default function Devices() {
     <div>
       <div style={styles.headerRow}>
         <h2 style={styles.title}>设备控制</h2>
-        <button style={styles.refreshBtn} onClick={loadDevices}>↻ 刷新</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 11, color: wsStatus === 'connected' ? '#2ed573' : wsStatus === 'connecting' ? '#ffa502' : '#ff4757' }}>
+            ● {wsStatus === 'connected' ? '实时' : wsStatus === 'connecting' ? '连接中' : '未连接'}
+          </span>
+          <button style={styles.refreshBtn} onClick={loadDevices}>↻ 刷新</button>
+        </div>
       </div>
 
       <select
