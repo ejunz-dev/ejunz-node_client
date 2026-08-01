@@ -4,11 +4,16 @@
   "private": true,
   "packageManager": "yarn@4.2.0",
   "workspaces": [
-    "ui"
+    "ui",
+    "desktop",
+    "desktop/frontend"
   ],
   "scripts": {
     "dev": "yarn workspace @ejunz/node-client-ui dev:ui",
     "build": "yarn workspace @ejunz/node-client-ui build:ui",
+    "dev:desktop": "yarn workspace @ejunz/node-client-desktop-ui dev",
+    "build:desktop": "yarn workspace @ejunz/node-client-desktop-ui build && yarn workspace @ejunz/node-client-desktop build",
+    "neu:dev": "yarn workspace @ejunz/node-client-desktop dev",
     "sync": "yarn exec cap sync",
     "sync:ios": "yarn exec cap sync ios",
     "sync:android": "yarn exec cap sync android",
