@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getServerUrl, getSavedPassword, fetchNodes, fetchNodeDevices, controlDevice, EdgeNode, Device } from '../api';
+import { getServerUrl, getSavedUsername, getSavedPassword, fetchNodes, fetchNodeDevices, controlDevice, EdgeNode, Device } from '../api';
 
 const styles: Record<string, React.CSSProperties> = {
   headerRow: {
@@ -89,7 +89,6 @@ export default function Devices() {
   const [loading, setLoading] = useState(false);
   const [toggling, setToggling] = useState<Set<string>>(new Set());
   const [wsStatus, setWsStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
-  const wsRef = useRef<WebSocket | null>(null);
   const serverUrl = getServerUrl();
 
   useEffect(() => {
@@ -129,65 +128,76 @@ export default function Devices() {
     }
   }, [selectedNode]);
 
-  // WebSocket for real-time device state updates
+  // SSE for real-time device state updates (via fetch streaming)
   useEffect(() => {
     if (!selectedNode || !serverUrl) return;
 
     // Initial load
     loadDevices();
 
-    // Connect WebSocket (use token query param, WebSocket API doesn't support custom headers)
-    const wsUrl = serverUrl.replace(/^http/, 'ws') + '/api/edge/ws?token=' + encodeURIComponent(getSavedPassword());
-
-    let ws: WebSocket | null = null;
+    const sseUrl = serverUrl + '/api/edge/ws?token=' + encodeURIComponent(getSavedPassword());
+    let controller: AbortController | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout>;
 
-    function connect() {
-      ws = new WebSocket(wsUrl);
-      wsRef.current = ws;
+    async function connect() {
+      controller = new AbortController();
       setWsStatus('connecting');
+      try {
+        const res = await fetch(sseUrl, {
+          headers: { Authorization: 'Basic ' + btoa(getSavedUsername() + ':' + getSavedPassword()) },
+          signal: controller.signal,
+        });
+        if (!res.ok || !res.body) throw new Error('SSE connection failed');
+        setWsStatus('connected');
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
 
-      ws.onopen = () => { console.log('WS connected'); setWsStatus('connected'); };
-      ws.onmessage = (event) => {
-        try {
-          const msg = JSON.parse(event.data);
-          if (msg.type === 'device_state') {
-            // Extract nodeId and deviceId from topic: node/<nodeId>/devices/<deviceId>/state
-            const parts = msg.topic?.split('/') || [];
-            const topicNodeId = parts[1];
-            const deviceId = parts[3];
-            if (topicNodeId !== selectedNode || !deviceId) return;
-            // Parse payload to get state
-            let payload = msg.payload;
-            if (typeof payload === 'string') {
-              try { payload = JSON.parse(payload); } catch {}
-            }
-            const newState = payload?.state === 'ON' ? 'ON' : payload?.state === 'OFF' ? 'OFF' : undefined;
-            if (newState) {
-              setDevices((prev) =>
-                prev.map((d) =>
-                  d.deviceId === deviceId ? { ...d, currentState: newState } : d
-                )
-              );
-            }
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            try {
+              const msg = JSON.parse(line.slice(6));
+              if (msg.type === 'device_state') {
+                const parts = msg.topic?.split('/') || [];
+                const topicNodeId = parts[1];
+                const deviceId = parts[3];
+                if (topicNodeId !== selectedNode || !deviceId) continue;
+                let payload = msg.payload;
+                if (typeof payload === 'string') {
+                  try { payload = JSON.parse(payload); } catch {}
+                }
+                const newState = payload?.state === 'ON' ? 'ON' : payload?.state === 'OFF' ? 'OFF' : undefined;
+                if (newState) {
+                  setDevices((prev) =>
+                    prev.map((d) =>
+                      d.deviceId === deviceId ? { ...d, currentState: newState } : d
+                    )
+                  );
+                }
+              }
+            } catch {}
           }
-        } catch {}
-      };
-      ws.onclose = () => {
-        wsRef.current = null;
-        setWsStatus('disconnected');
-        // Reconnect after 3s
-        reconnectTimer = setTimeout(connect, 3000);
-      };
-      ws.onerror = (e) => { console.error('WS error', e); ws?.close(); };
+        }
+      } catch (err: any) {
+        if (err.name === 'AbortError') return;
+        console.error('SSE error', err);
+      }
+      setWsStatus('disconnected');
+      controller = null;
+      reconnectTimer = setTimeout(connect, 5000);
     }
 
     connect();
 
     return () => {
       clearTimeout(reconnectTimer);
-      ws?.close();
-      wsRef.current = null;
+      controller?.abort();
     };
   }, [selectedNode, serverUrl, loadDevices]);
 
