@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getServerUrl, loadCredentials, getSavedPassword, fetchNodes, fetchNodeDevices, controlDevice, EdgeNode, Device } from '../api';
+import { CapacitorWebsocket } from '@miaz/capacitor-websocket';
 
 const styles: Record<string, React.CSSProperties> = {
   headerRow: {
@@ -128,23 +129,51 @@ export default function Devices() {
     }
   }, [selectedNode]);
 
-    // WebSocket for real-time device state updates (via Vite proxy)
+  // WebSocket for real-time device state updates (native Capacitor plugin)
   useEffect(() => {
     if (!selectedNode || !serverUrl) return;
     loadDevices();
     loadCredentials();
 
     const wsUrl = serverUrl.replace(/^https?/, (m) => (m === 'https' ? 'wss' : 'ws')) + '/api/edge/ws?token=' + encodeURIComponent(getSavedPassword());
+    const wsName = `edge-devices-${selectedNode}`;
 
-    let ws: WebSocket | null = null;
-    let reconnectTimer: ReturnType<typeof setTimeout>;
+    let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+    let disposed = false;
+    let built = false;
+    let reconnectScheduled = false;
+    const listeners: Array<{ remove: () => void }> = [];
 
-    function connect() {
-      ws = new WebSocket(wsUrl);
+    function scheduleReconnect() {
+      if (disposed || reconnectScheduled) return;
+      reconnectScheduled = true;
+      reconnectTimer = setTimeout(() => {
+        reconnectScheduled = false;
+        connect();
+      }, 3000);
+    }
+
+    async function connect() {
+      if (disposed) return;
       setWsStatus('connecting');
+      try {
+        if (!built) {
+          await CapacitorWebsocket.build({ url: wsUrl, name: wsName });
+          built = true;
+        }
+        await CapacitorWebsocket.connect({ name: wsName });
+      } catch (error) {
+        console.error('[WS] connect failed', error);
+        setWsStatus('disconnected');
+        scheduleReconnect();
+      }
+    }
 
-      ws.onopen = () => { setWsStatus('connected'); };
-      ws.onmessage = (event) => {
+    async function registerListeners() {
+      listeners.push(await CapacitorWebsocket.addListener(`${wsName}:connected`, () => {
+        setWsStatus('connected');
+      }));
+      listeners.push(await CapacitorWebsocket.addListener(`${wsName}:message`, (event: { data: string }) => {
         try {
           const msg = JSON.parse(event.data);
           if (msg.type !== 'device_state') return;
@@ -159,16 +188,34 @@ export default function Devices() {
             ));
           }
         } catch {}
-      };
-      ws.onclose = () => {
+      }));
+      listeners.push(await CapacitorWebsocket.addListener(`${wsName}:disconnected`, () => {
         setWsStatus('disconnected');
-        reconnectTimer = setTimeout(connect, 3000);
-      };
-      ws.onerror = () => ws?.close();
+        scheduleReconnect();
+      }));
+      listeners.push(await CapacitorWebsocket.addListener(`${wsName}:connecterror`, (event: { exception: string }) => {
+        console.error('[WS] connect error', event.exception);
+        setWsStatus('disconnected');
+        scheduleReconnect();
+      }));
+      listeners.push(await CapacitorWebsocket.addListener(`${wsName}:error`, (event: { cause: string }) => {
+        console.error('[WS] error', event.cause);
+      }));
+      if (!disposed) connect();
     }
 
-    connect();
-    return () => { clearTimeout(reconnectTimer); ws?.close(); };
+    registerListeners().catch((error) => {
+      console.error('[WS] listener registration failed', error);
+      setWsStatus('disconnected');
+      scheduleReconnect();
+    });
+
+    return () => {
+      disposed = true;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      listeners.forEach((listener) => listener.remove());
+      CapacitorWebsocket.disconnect({ name: wsName }).catch(() => {});
+    };
   }, [selectedNode, serverUrl, loadDevices]);
 
   const handleToggle = async (device: Device) => {
