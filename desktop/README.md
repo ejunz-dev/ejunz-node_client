@@ -42,6 +42,6 @@ so all platforms are published.
 
 ## Notes
 
-- The API layer is ported from the mobile client's `ui/app/api.ts`. Auth uses a `?token=` query parameter, so plain `fetch` works inside the webview. CORS is an allowlist on the Edge server (`cors` key in `config.edge.yaml`); it must include the app origin — `localhost:5174` (vite dev) and `localhost:5175` (Neutralino window, fixed via `port` in `neutralino.config.json`).
+- The API layer is ported from the mobile client's `ui/app/api.ts`. Auth uses a `?token=` query parameter, so plain `fetch` works inside the webview. CORS is an allowlist on the Edge server (`cors` key in `config.edge.yaml`); it must include the app origin — `localhost:5174` (vite dev) and `localhost:59201` (Neutralino window, fixed via `port` in `neutralino.config.json`; kept off the common 51xx dev-server range to avoid collisions).
 - Real-time device state sync uses the `/api/edge/ws` WebSocket push channel (`src/ws.ts`, `?token=` auth, 3s reconnect). There is intentionally no polling/SSE fallback.
 - Credentials are persisted via the Neutralino `storage.*` native API, falling back to `localStorage` when running in a plain browser during development.
