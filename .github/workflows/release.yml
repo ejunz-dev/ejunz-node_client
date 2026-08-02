@@ -1,0 +1,53 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  desktop:
+    name: Build & publish desktop client
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack (Yarn 4)
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build desktop frontend
+        run: yarn workspace @ejunz/node-client-desktop-ui build
+
+      - name: Build Neutralino app
+        run: |
+          cd desktop
+          yarn neu update
+          yarn neu build --release
+
+      - name: Package artifacts
+        run: |
+          set -e
+          cd desktop/dist/ejunz-edge-desktop
+          chmod +x ejunz-edge-desktop-linux_* ejunz-edge-desktop-mac_*
+          for target in linux_x64 linux_arm64 linux_armhf mac_x64 mac_arm64 mac_universal; do
+            name=$(echo "$target" | tr '_' '-')
+            tar -czvf "/tmp/ejunz-edge-desktop-${name}.tar.gz" resources.neu "ejunz-edge-desktop-${target}"
+          done
+          zip -r /tmp/ejunz-edge-desktop-win-x64.zip resources.neu ejunz-edge-desktop-win_x64.exe
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: /tmp/ejunz-edge-desktop-*
+          generate_release_notes: true
