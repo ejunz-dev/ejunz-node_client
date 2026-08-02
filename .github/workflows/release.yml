@@ -10,8 +10,8 @@ permissions:
   contents: write
 
 jobs:
-  desktop:
-    name: Build & publish desktop client
+  build:
+    name: Build desktop client
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,23 +35,25 @@ jobs:
           yarn neu update
           yarn neu build --release
 
-      - name: Package artifacts
+      - name: Package Linux/Windows artifacts
         run: |
           set -e
           cd desktop/dist/ejunz-edge-desktop
           chmod +x ejunz-edge-desktop-linux_* ejunz-edge-desktop-mac_*
+          mkdir -p /tmp/packages
           for target in linux_x64 linux_arm64 linux_armhf; do
             name=$(echo "$target" | tr '_' '-')
-            tar -czvf "/tmp/ejunz-edge-desktop-${name}.tar.gz" resources.neu "ejunz-edge-desktop-${target}"
+            tar -czvf "/tmp/packages/ejunz-edge-desktop-${name}.tar.gz" resources.neu "ejunz-edge-desktop-${target}"
           done
-          zip -r /tmp/ejunz-edge-desktop-win-x64.zip resources.neu ejunz-edge-desktop-win_x64.exe
+          zip -r /tmp/packages/ejunz-edge-desktop-win-x64.zip resources.neu ejunz-edge-desktop-win_x64.exe
 
-      - name: Package macOS .app bundles
+      - name: Assemble macOS .app bundles
         run: |
           set -e
           cd desktop/dist/ejunz-edge-desktop
+          mkdir -p /tmp/apps
           for arch in arm64 x64 universal; do
-            app="/tmp/mac-${arch}/Ejunz Edge.app"
+            app="/tmp/apps/${arch}/Ejunz Edge.app"
             mkdir -p "$app/Contents/MacOS"
             cp "ejunz-edge-desktop-mac_${arch}" "$app/Contents/MacOS/ejunz-edge-desktop"
             cp resources.neu "$app/Contents/MacOS/"
@@ -73,11 +75,72 @@ jobs:
           </dict>
           </plist>
           EOF
-            tar -czvf "/tmp/ejunz-edge-desktop-mac-${arch}-app.tar.gz" -C "/tmp/mac-${arch}" "Ejunz Edge.app"
           done
+
+      - name: Upload Linux/Windows packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: /tmp/packages/
+          retention-days: 1
+
+      - name: Upload macOS apps
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-apps
+          path: /tmp/apps/
+          retention-days: 1
+
+  dmg:
+    name: Create macOS DMGs
+    runs-on: macos-latest
+    needs: build
+    steps:
+      - name: Download macOS apps
+        uses: actions/download-artifact@v4
+        with:
+          name: mac-apps
+          path: /tmp/apps
+
+      - name: Create DMGs
+        run: |
+          set -e
+          mkdir -p /tmp/dmg
+          for arch in arm64 x64 universal; do
+            staging="/tmp/staging-${arch}"
+            mkdir -p "$staging"
+            cp -R "/tmp/apps/${arch}/Ejunz Edge.app" "$staging/"
+            ln -s /Applications "$staging/Applications"
+            hdiutil create -volname "Ejunz Edge" -srcfolder "$staging" -ov -format UDZO \
+              "/tmp/dmg/ejunz-edge-desktop-mac-${arch}.dmg"
+          done
+
+      - name: Upload DMGs
+        uses: actions/upload-artifact@v4
+        with:
+          name: dmgs
+          path: /tmp/dmg/
+          retention-days: 1
+
+  publish:
+    name: Publish GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build, dmg]
+    steps:
+      - name: Download Linux/Windows packages
+        uses: actions/download-artifact@v4
+        with:
+          name: packages
+          path: /tmp/release
+
+      - name: Download DMGs
+        uses: actions/download-artifact@v4
+        with:
+          name: dmgs
+          path: /tmp/release
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: /tmp/ejunz-edge-desktop-*
+          files: /tmp/release/*
           generate_release_notes: true
