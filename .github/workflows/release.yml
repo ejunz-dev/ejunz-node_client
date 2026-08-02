@@ -40,11 +40,41 @@ jobs:
           set -e
           cd desktop/dist/ejunz-edge-desktop
           chmod +x ejunz-edge-desktop-linux_* ejunz-edge-desktop-mac_*
-          for target in linux_x64 linux_arm64 linux_armhf mac_x64 mac_arm64 mac_universal; do
+          for target in linux_x64 linux_arm64 linux_armhf; do
             name=$(echo "$target" | tr '_' '-')
             tar -czvf "/tmp/ejunz-edge-desktop-${name}.tar.gz" resources.neu "ejunz-edge-desktop-${target}"
           done
           zip -r /tmp/ejunz-edge-desktop-win-x64.zip resources.neu ejunz-edge-desktop-win_x64.exe
+
+      - name: Package macOS .app bundles
+        run: |
+          set -e
+          cd desktop/dist/ejunz-edge-desktop
+          for arch in arm64 x64 universal; do
+            app="/tmp/mac-${arch}/Ejunz Edge.app"
+            mkdir -p "$app/Contents/MacOS"
+            cp "ejunz-edge-desktop-mac_${arch}" "$app/Contents/MacOS/ejunz-edge-desktop"
+            cp resources.neu "$app/Contents/MacOS/"
+            chmod +x "$app/Contents/MacOS/ejunz-edge-desktop"
+            cat > "$app/Contents/Info.plist" <<'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleName</key><string>Ejunz Edge</string>
+            <key>CFBundleDisplayName</key><string>Ejunz Edge</string>
+            <key>CFBundleIdentifier</key><string>dev.ejunz.node.desktop</string>
+            <key>CFBundleVersion</key><string>1.0.0</string>
+            <key>CFBundleShortVersionString</key><string>1.0.0</string>
+            <key>CFBundlePackageType</key><string>APPL</string>
+            <key>CFBundleExecutable</key><string>ejunz-edge-desktop</string>
+            <key>LSMinimumSystemVersion</key><string>11.0</string>
+            <key>NSHighResolutionCapable</key><true/>
+          </dict>
+          </plist>
+          EOF
+            tar -czvf "/tmp/ejunz-edge-desktop-mac-${arch}-app.tar.gz" -C "/tmp/mac-${arch}" "Ejunz Edge.app"
+          done
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
