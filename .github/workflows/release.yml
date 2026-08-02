@@ -110,6 +110,7 @@ jobs:
             staging="/tmp/staging-${arch}"
             mkdir -p "$staging"
             cp -R "/tmp/apps/${arch}/Ejunz Edge.app" "$staging/"
+            chmod +x "$staging/Ejunz Edge.app/Contents/MacOS/ejunz-edge-desktop"
             ln -s /Applications "$staging/Applications"
             hdiutil create -volname "Ejunz Edge" -srcfolder "$staging" -ov -format UDZO \
               "/tmp/dmg/ejunz-edge-desktop-mac-${arch}.dmg"
