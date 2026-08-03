@@ -32,6 +32,9 @@ node_modules
 core
 core.*
 
+# Yarn Berry
+.yarn/install-state.gz
+
 # npm lockfile (we use yarn)
 package-lock.json
 
