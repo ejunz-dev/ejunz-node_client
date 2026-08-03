@@ -1,0 +1,1 @@
+"use strict";const e=require("../common/vendor.js"),o=e.defineComponent({__name:"DeviceSwitch",props:{checked:{type:Boolean},disabled:{type:Boolean}},emits:["change"],setup(o,{emit:c}){const t=o,n=c;return(o,c)=>({a:t.checked?1:"",b:t.disabled?1:"",c:e.o(e=>!t.disabled&&n("change"),"9f")})}}),c=e._export_sfc(o,[["__scopeId","data-v-471622ed"]]);wx.createComponent(c);
