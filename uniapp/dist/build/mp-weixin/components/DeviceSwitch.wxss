@@ -1,0 +1,1 @@
+.switch.data-v-471622ed{width:96rpx;height:56rpx;border-radius:56rpx;background:#30415d;padding:6rpx;transition:all .2s}.switch.on.data-v-471622ed{background:#55d6be}.switch.disabled.data-v-471622ed{opacity:.5}.thumb.data-v-471622ed{width:44rpx;height:44rpx;border-radius:50%;background:#fff;transition:transform .2s}.switch.on .thumb.data-v-471622ed{transform:translate(40rpx)}

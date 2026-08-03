@@ -1,0 +1,1 @@
+"use strict";const e=require("../common/vendor.js"),t=e.defineComponent({__name:"PageHeader",props:{title:{},refreshing:{type:Boolean}},emits:["refresh"],setup(t,{emit:r}){const o=r;return(t,r)=>({a:e.t(t.title),b:e.t(t.refreshing?"加载中…":"↻ 刷新"),c:e.o(e=>o("refresh"),"8b")})}}),r=e._export_sfc(t,[["__scopeId","data-v-95960182"]]);wx.createComponent(r);
