@@ -1,3 +1,9 @@
+/** Append a query parameter to a URL string, handling existing query. */
+function setQueryParam(url: string, key: string, value: string): string {
+  const separator = url.includes('?') ? '&' : '?'
+  return `${url}${separator}${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+}
+
 export function normalizeServerUrl(value: string): string {
   const input = value.trim()
   if (!input) return ''
@@ -7,24 +13,26 @@ export function normalizeServerUrl(value: string): string {
 
 export function buildApiUrl(serverUrl: string, path: string, token = ''): string {
   const base = normalizeServerUrl(serverUrl)
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`
   // In H5 dev mode, use a relative URL so the Vite dev proxy handles the
   // cross-origin request instead of the browser (avoids CORS errors).
   if (typeof window !== 'undefined' && base && !base.startsWith(window.location.origin)) {
-    const url = new URL(path.startsWith('/') ? path : `/${path}`, `${window.location.origin}/`)
-    if (token) url.searchParams.set('token', token)
-    return url.toString()
+    let url = `${window.location.origin}${normalizedPath}`
+    if (token) url = setQueryParam(url, 'token', token)
+    return url
   }
-  const url = new URL(path.startsWith('/') ? path : `/${path}`, `${base}/`)
-  if (token) url.searchParams.set('token', token)
-  return url.toString()
+  let url = `${base}${normalizedPath}`
+  if (token) url = setQueryParam(url, 'token', token)
+  return url
 }
 
 export function buildEdgeWsUrl(serverUrl: string, token = ''): string {
   const base = normalizeServerUrl(serverUrl)
-  const url = new URL('/api/edge/ws', `${base}/`)
-  url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
-  if (token) url.searchParams.set('token', token)
-  return url.toString()
+  let url = `${base}/api/edge/ws`
+  // Replace http/https protocol with ws/wss
+  url = url.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:')
+  if (token) url = setQueryParam(url, 'token', token)
+  return url
 }
 
 export function displayServerUrl(serverUrl: string): string {
@@ -32,9 +40,5 @@ export function displayServerUrl(serverUrl: string): string {
 }
 
 export function redactUrl(value: string): string {
-  try {
-    const url = new URL(value)
-    if (url.searchParams.has('token')) url.searchParams.set('token', '***')
-    return url.toString()
-  } catch { return value.replace(/([?&]token=)[^&]*/i, '$1***') }
+  return value.replace(/([?&]token=)[^&]*/i, '$1***')
 }
