@@ -1,0 +1,1 @@
+<view class="{{['switch', 'data-v-471622ed', a && 'on', b && 'disabled']}}" bindtap="{{c}}"><view class="thumb data-v-471622ed"/></view>
