@@ -1,0 +1,27 @@
+{
+  "pages": [
+    { "path": "pages/login/index", "style": { "navigationStyle": "custom" } },
+    { "path": "pages/dashboard/index", "style": { "navigationBarTitleText": "概览" } },
+    { "path": "pages/nodes/index", "style": { "navigationBarTitleText": "节点" } },
+    { "path": "pages/devices/index", "style": { "navigationBarTitleText": "设备" } },
+    { "path": "pages/settings/index", "style": { "navigationBarTitleText": "设置" } }
+  ],
+  "tabBar": {
+    "color": "#75809a",
+    "selectedColor": "#55d6be",
+    "backgroundColor": "#101a2d",
+    "borderStyle": "black",
+    "list": [
+      { "pagePath": "pages/dashboard/index", "text": "概览" },
+      { "pagePath": "pages/nodes/index", "text": "节点" },
+      { "pagePath": "pages/devices/index", "text": "设备" },
+      { "pagePath": "pages/settings/index", "text": "设置" }
+    ]
+  },
+  "globalStyle": {
+    "navigationBarTextStyle": "white",
+    "navigationBarBackgroundColor": "#101a2d",
+    "backgroundColor": "#08111f",
+    "backgroundTextStyle": "dark"
+  }
+}

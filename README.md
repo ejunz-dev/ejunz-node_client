@@ -98,3 +98,22 @@ The MVP uses HTTP Basic Auth. Production deployments should use HTTPS.
 
 - LAN Edge: `http://192.168.1.100:5283`
 - Remote (via FRP): `http://47.86.164.129:10031`
+
+## uni-app client
+
+The standalone Vue 3 + TypeScript + Pinia client lives in `uniapp/`. It targets H5, native uni-app, and WeChat Mini Program builds without importing React, Capacitor, or Neutralino.
+
+```bash
+yarn install
+yarn dev:uni             # uni-app H5 development
+yarn build:uni           # uni-app H5 production
+yarn typecheck
+
+# Existing React/Capacitor client
+yarn dev
+yarn build
+yarn dev:mp-weixin      # WeChat Mini Program development
+yarn build:mp-weixin    # WeChat Mini Program build
+```
+
+See [`uniapp/README.md`](uniapp/README.md) for the page, REST, session, device-state merge, and `edge-ws/v1` implementation details.
