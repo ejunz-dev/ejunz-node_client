@@ -6,7 +6,7 @@
  * conditional rendering, prefer uni-app's `#ifdef` preprocessor comments.
  */
 
-export type UniPlatform = 'ios' | 'android' | 'h5' | 'mp-weixin' | 'mp-alipay' | 'mp-baidu' | 'mp-toutiao' | 'mp-qq' | 'quickapp-webview' | 'app' | 'unknown'
+export type UniPlatform = 'ios' | 'android' | 'h5' | 'desktop' | 'mp-weixin' | 'mp-alipay' | 'mp-baidu' | 'mp-toutiao' | 'mp-qq' | 'quickapp-webview' | 'app' | 'unknown'
 
 let cachedPlatform: UniPlatform | null = null
 let cachedSystemInfo: UniApp.GetSystemInfoResult | null = null
@@ -49,6 +49,9 @@ export function getPlatform(): UniPlatform {
   // #ifdef QUICKAPP-WEBVIEW
   cachedPlatform = 'quickapp-webview'
   // #endif
+  // #ifdef DESKTOP
+  cachedPlatform = 'desktop'
+  // #endif
   if (!cachedPlatform) cachedPlatform = 'unknown'
   return cachedPlatform
 }
@@ -73,6 +76,17 @@ export function isMiniProgram(): boolean {
 /** Is the current platform H5 (browser)? */
 export function isH5(): boolean {
   return getPlatform() === 'h5'
+}
+
+/** Is the current platform Desktop (Electron)? */
+export function isDesktop(): boolean {
+  return getPlatform() === 'desktop'
+}
+
+/** Is the current platform a desktop OS (macOS/Windows/Linux)? */
+export function isDesktopOS(): boolean {
+  const info = getSystemInfo()
+  return info.platform === 'mac' || info.platform === 'windows' || info.platform === 'linux'
 }
 
 /** Is the current platform iOS (native app only)? */
