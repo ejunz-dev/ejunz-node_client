@@ -59,21 +59,20 @@ jobs:
       - name: Upload artifact
         shell: bash
         run: |
-          # Only upload final distributable packages, not intermediate build files
           BUNDLE="uniapp/src-tauri/target/release/bundle"
           STAGING="/tmp/artifacts/${{ matrix.target }}"
           mkdir -p "$STAGING"
-          # Only final distributable packages
-          find "$BUNDLE" -type f \( \
-            -name "*.AppImage" -o \
-            -name "*.deb" -o \
-            -name "*.rpm" -o \
-            -name "*.dmg" -o \
-            -name "*.msi" -o \
-            -name "*.exe" -o \
-            -name "*.zip" \) \
-            ! -name "control.tar.gz" ! -name "data.tar.gz" \
-            -exec cp {} "$STAGING/" \;
+          # Copy from each bundle subdirectory
+          for dir in "$BUNDLE"/*/; do
+            [ -d "$dir" ] || continue
+            for f in "$dir"/*; do
+              [ -f "$f" ] || continue
+              case "$f" in
+                *.AppImage|*.deb|*.rpm|*.dmg|*.msi|*.exe|*.zip)
+                  cp "$f" "$STAGING/" ;;
+              esac
+            done
+          done
           echo "Uploading:"
           ls -la "$STAGING/"
       - name: Upload packages
