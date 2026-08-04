@@ -24,8 +24,8 @@
     "build:mp-qq": "uni build -p mp-qq",
     "dev:quickapp": "uni -p quickapp-webview",
     "build:quickapp": "uni build -p quickapp-webview",
-    "dev:desktop": "yarn build:h5 && cd neutralino && neu run --frontend-lib-dev",
-    "build:desktop": "yarn build:h5 && cd neutralino && neu build --release",
+    "dev:desktop": "yarn build:h5 && rm -rf neutralino/www && cp -r dist/build/h5 neutralino/www && cd neutralino && neu run --frontend-lib-dev",
+    "build:desktop": "yarn build:h5 && rm -rf neutralino/www && cp -r dist/build/h5 neutralino/www && cd neutralino && neu build --release",
     "desktop:update": "cd neutralino && neu update",
     "typecheck": "vue-tsc --noEmit"
   },
