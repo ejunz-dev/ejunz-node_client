@@ -24,30 +24,28 @@
     "build:mp-qq": "uni build -p mp-qq",
     "dev:quickapp": "uni -p quickapp-webview",
     "build:quickapp": "uni build -p quickapp-webview",
-
     "dev:desktop": "yarn build:h5 && cd neutralino && neu run --frontend-lib-dev",
     "build:desktop": "yarn build:h5 && cd neutralino && neu build --release",
     "desktop:update": "cd neutralino && neu update",
-
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
     "@dcloudio/uni-app": "3.0.0-alpha-5020320260731001",
     "@dcloudio/uni-app-plus": "3.0.0-alpha-5020320260731001",
     "@dcloudio/uni-h5": "3.0.0-alpha-5020320260731001",
-    "@dcloudio/uni-mp-weixin": "3.0.0-alpha-5020320260731001",
     "@dcloudio/uni-mp-alipay": "3.0.0-alpha-5020320260731001",
     "@dcloudio/uni-mp-baidu": "3.0.0-alpha-5020320260731001",
-    "@dcloudio/uni-mp-toutiao": "3.0.0-alpha-5020320260731001",
     "@dcloudio/uni-mp-qq": "3.0.0-alpha-5020320260731001",
+    "@dcloudio/uni-mp-toutiao": "3.0.0-alpha-5020320260731001",
+    "@dcloudio/uni-mp-weixin": "3.0.0-alpha-5020320260731001",
     "@dcloudio/uni-quickapp-webview": "3.0.0-alpha-5020320260731001",
     "pinia": "^3.0.3",
     "vue": "^3.5.22"
   },
   "devDependencies": {
     "@dcloudio/types": "^3.4.32",
-    "@neutralinojs/neu": "^11.1.0",
     "@dcloudio/vite-plugin-uni": "3.0.0-alpha-5020320260731001",
+    "@neutralinojs/neu": "^11.1.0",
     "@types/node": "^22.15.0",
     "sass-embedded": "^1.89.2",
     "typescript": "^5.8.3",
