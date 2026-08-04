@@ -39,6 +39,24 @@ export default defineConfig(({ mode }) => {
     }
   }
 
+  // Desktop (Electron) specific optimizations
+  if (platform === 'desktop') {
+    config.build = {
+      ...config.build,
+      // Desktop apps have local storage, larger chunks are fine
+      chunkSizeWarningLimit: 2000,
+      // Enable source maps for debugging
+      sourcemap: mode !== 'production',
+      // Output to desktop-friendly directory
+      outDir: 'dist/build/desktop',
+    }
+    // Desktop dev server on a different port to avoid conflicts
+    config.server = {
+      ...config.server,
+      port: 5176,
+    }
+  }
+
   // Mini-program specific optimizations
   if (platform.startsWith('mp-')) {
     config.build = {

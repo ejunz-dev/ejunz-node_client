@@ -13,6 +13,7 @@ Standalone Vue 3 + TypeScript + Pinia client for the Ejunz Edge REST and `edge-w
 | mp-toutiao | Douyin/Toutiao Mini Program | ✅ |
 | mp-qq | QQ Mini Program | ✅ |
 | quickapp | Quick App (快应用) | ✅ |
+| Desktop (Electron) | macOS / Windows / Linux | ✅ |
 
 ## Commands
 
@@ -47,6 +48,15 @@ yarn build:mp-qq       # QQ Mini Program build
 # Quick App
 yarn dev:quickapp      # Quick App development
 yarn build:quickapp    # Quick App build
+
+# Desktop (Electron)
+yarn dev:desktop       # Desktop development (HMR)
+yarn build:desktop     # Desktop production build
+yarn dev:electron      # Desktop dev with Electron window
+yarn build:electron    # Package for all platforms
+yarn build:electron:linux  # Linux (AppImage + deb)
+yarn build:electron:mac    # macOS (DMG + zip)
+yarn build:electron:win    # Windows (NSIS + portable)
 ```
 
 ## Structure
@@ -68,6 +78,9 @@ Use `uni.getSystemInfoSync().platform` or the `#ifdef` preprocessor in `.vue` fi
 <!-- #endif -->
 <!-- #ifdef H5 -->
 <view>Only shown in browser</view>
+<!-- #endif -->
+<!-- #ifdef DESKTOP -->
+<view>Only shown in Desktop (Electron)</view>
 <!-- #endif -->
 <!-- #ifdef MP-WEIXIN -->
 <view>Only shown in WeChat Mini Program</view>
@@ -102,6 +115,48 @@ yarn build:app
 ```bash
 yarn dev:mp-weixin
 # Open the dist/build/mp-weixin directory in WeChat DevTools
+```
+
+### Desktop (Electron)
+
+```bash
+# Desktop development (HMR in browser)
+yarn dev:desktop
+# Open http://localhost:5176
+
+# Desktop development with Electron window
+yarn dev:electron
+
+# Production build
+yarn build:desktop
+
+# Package installers for all platforms
+yarn build:electron
+```
+
+Window configuration (size, icon, frameless) is in `src/manifest.json` under `"desktop"` → `"electron"`. Electron builder config is in `electron-builder.json`.
+
+Desktop-specific conditional compilation:
+
+```vue
+<!-- #ifdef DESKTOP -->
+<view>Only shown in Desktop (Electron)</view>
+<!-- #endif -->
+<!-- #ifndef DESKTOP -->
+<view>Hidden on Desktop</view>
+<!-- #endif -->
+```
+
+Runtime detection:
+
+```typescript
+import { isDesktop, isDesktopOS } from '@/utils/platform'
+
+if (isDesktop()) {
+  // Running inside Electron
+} else if (isDesktopOS()) {
+  // Running on a desktop OS (macOS/Windows/Linux) but not in Electron
+}
 ```
 
 ## Credentials

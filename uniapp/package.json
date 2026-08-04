@@ -24,12 +24,22 @@
     "build:mp-qq": "uni build -p mp-qq",
     "dev:quickapp": "uni -p quickapp-webview",
     "build:quickapp": "uni build -p quickapp-webview",
+
+    "dev:desktop": "uni -p desktop",
+    "build:desktop": "uni build -p desktop",
+    "dev:electron": "uni -p desktop -- --dev",
+    "build:electron": "uni build -p desktop && electron-builder",
+    "build:electron:linux": "uni build -p desktop && electron-builder --linux",
+    "build:electron:mac": "uni build -p desktop && electron-builder --mac",
+    "build:electron:win": "uni build -p desktop && electron-builder --win",
+
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
     "@dcloudio/uni-app": "3.0.0-alpha-5020320260731001",
     "@dcloudio/uni-app-plus": "3.0.0-alpha-5020320260731001",
     "@dcloudio/uni-h5": "3.0.0-alpha-5020320260731001",
+    "@dcloudio/uni-desktop": "3.0.0-alpha-5020320260731001",
     "@dcloudio/uni-mp-weixin": "3.0.0-alpha-5020320260731001",
     "@dcloudio/uni-mp-alipay": "3.0.0-alpha-5020320260731001",
     "@dcloudio/uni-mp-baidu": "3.0.0-alpha-5020320260731001",
@@ -43,6 +53,8 @@
     "@dcloudio/types": "^3.4.32",
     "@dcloudio/vite-plugin-uni": "3.0.0-alpha-5020320260731001",
     "@types/node": "^22.15.0",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0",
     "sass-embedded": "^1.89.2",
     "typescript": "^5.8.3",
     "vite": "^6.3.5",
