@@ -33,23 +33,33 @@ jobs:
         run: |
           cd uniapp/neutralino
           yarn neu update
+          # neu update downloads binaries to bin/ directory
+          ls -la bin/
 
       - name: Build Neutralino app
         run: |
-          # neu build creates .tmp/ in CWD and then tries to copy './'
-          # into it, which fails. Workaround: add .neuignore to exclude
-          # .tmp/ from the copy operation.
+          # neu build has a bug (creates .tmp/ then tries to copy ./ into
+          # it). Build manually: create resources.neu (zip), then copy
+          # the Neutralino binary alongside it.
           H5_DIR="$PWD/uniapp/dist/build/h5"
           NEU_DIR="/tmp/neu-build"
+          BINARY_NAME="ejunz-edge-desktop"
           rm -rf "$NEU_DIR"
-          mkdir -p "$NEU_DIR/www"
+          mkdir -p "$NEU_DIR/www" "$NEU_DIR/dist/$BINARY_NAME"
+
+          # Copy H5 build output
           cp -r "$H5_DIR"/* "$NEU_DIR/www/"
-          cp uniapp/neutralino/neutralino.config.json "$NEU_DIR/"
-          echo ".tmp/" > "$NEU_DIR/.neuignore"
-          cd "$NEU_DIR"
-          npx @neutralinojs/neu build --release
-          mkdir -p "$NEU_DIR/dist"
-          cp -r dist/* "$NEU_DIR/dist/"
+
+          # Create resources.neu (zip of www contents)
+          cd "$NEU_DIR/www"
+          zip -r "$NEU_DIR/dist/$BINARY_NAME/resources.neu" . > /dev/null
+
+          # Copy Neutralino binary (downloaded by neu update)
+          NEU_BIN="$PWD/uniapp/neutralino/bin"
+          if [ -d "$NEU_BIN" ]; then
+            cp "$NEU_BIN"/* "$NEU_DIR/dist/$BINARY_NAME/" 2>/dev/null || true
+          fi
+          ls -la "$NEU_DIR/dist/$BINARY_NAME/"
 
       - name: Package artifacts
         run: .github/scripts/package-desktop.sh /tmp/packages
