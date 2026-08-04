@@ -15,12 +15,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
-            target: linux
-            ext: AppImage
-          - os: macos-latest
-            target: mac
-            ext: dmg
+          # - os: ubuntu-latest
+          #   target: linux
+          #   ext: AppImage
+          # - os: macos-latest
+          #   target: mac
+          #   ext: dmg
           - os: windows-latest
             target: win
             ext: msi
