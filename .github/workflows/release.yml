@@ -38,31 +38,22 @@ jobs:
 
       - name: Build Neutralino app
         run: |
-          # neu build has a bug: it creates .tmp/ in CWD and then tries
-          # to copy ./ into it. Workaround: run from a temp directory
-          # and use --config-file to point to the project.
+          # Build resources.neu manually (zip of H5 output), then
+          # embed it into the Neutralino binary so it's self-contained.
           ROOT="$PWD"
           H5_DIR="$ROOT/uniapp/dist/build/h5"
           NEU_BIN="$ROOT/uniapp/neutralino/bin"
           BINARY_NAME="ejunz-edge-desktop"
           NEU_DIR="/tmp/neu-build"
           rm -rf "$NEU_DIR"
-          mkdir -p "$NEU_DIR/project"
+          mkdir -p "$NEU_DIR/www" "$NEU_DIR/dist/$BINARY_NAME"
 
-          # Copy H5 build output as the document root
-          cp -r "$H5_DIR"/* "$NEU_DIR/project/"
+          # Copy H5 build output
+          cp -r "$H5_DIR"/* "$NEU_DIR/www/"
 
-          # Copy neutralino config
-          cp "$ROOT/uniapp/neutralino/neutralino.config.json" "$NEU_DIR/"
-
-          # Build from a temp dir so .tmp/ is outside the project
-          cd /tmp
-          npx @neutralinojs/neu build --release \
-            --config-file "$NEU_DIR/neutralino.config.json"
-
-          # Copy dist output to known location
-          mkdir -p "$NEU_DIR/dist"
-          cp -r /tmp/dist/* "$NEU_DIR/dist/" 2>/dev/null || true
+          # Create resources.neu (zip of www contents)
+          cd "$NEU_DIR/www"
+          zip -r "$NEU_DIR/dist/$BINARY_NAME/resources.neu" . > /dev/null
 
           # Copy and rename Neutralino binaries
           if [ -d "$NEU_BIN" ]; then
@@ -74,7 +65,7 @@ jobs:
               chmod +x "$NEU_DIR/dist/$BINARY_NAME/$BINARY_NAME-$suffix"
             done
           fi
-          ls -la "$NEU_DIR/dist/$BINARY_NAME/" 2>/dev/null || ls -la "$NEU_DIR/dist/"
+          ls -la "$NEU_DIR/dist/$BINARY_NAME/"
 
       - name: Package artifacts
         run: .github/scripts/package-desktop.sh /tmp/packages
