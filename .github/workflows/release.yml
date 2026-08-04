@@ -46,7 +46,7 @@ jobs:
         run: corepack enable
 
       - name: Install dependencies
-        run: yarn install --immutable
+        run: yarn install
 
       - name: Build uni-app H5
         run: yarn build:h5
@@ -142,7 +142,7 @@ PLIST
         run: corepack enable
 
       - name: Install dependencies
-        run: yarn install --immutable
+        run: yarn install
 
       - name: Build uni-app H5
         run: yarn build:h5
