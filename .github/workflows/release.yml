@@ -36,6 +36,8 @@ jobs:
 
       - name: Build Neutralino app
         run: |
+          rm -rf uniapp/neutralino/www
+          cp -r uniapp/dist/build/h5 uniapp/neutralino/www
           cd uniapp/neutralino
           yarn neu build --release
 
