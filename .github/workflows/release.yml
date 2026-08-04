@@ -56,30 +56,18 @@ jobs:
           cd uniapp
           npx tauri build
 
-      - name: Upload artifact
-        shell: bash
-        run: |
-          BUNDLE="uniapp/src-tauri/target/release/bundle"
-          STAGING="/tmp/artifacts/${{ matrix.target }}"
-          mkdir -p "$STAGING"
-          # Copy from each bundle subdirectory
-          for dir in "$BUNDLE"/*/; do
-            [ -d "$dir" ] || continue
-            for f in "$dir"/*; do
-              [ -f "$f" ] || continue
-              case "$f" in
-                *.AppImage|*.deb|*.rpm|*.dmg|*.msi|*.exe|*.zip)
-                  cp "$f" "$STAGING/" ;;
-              esac
-            done
-          done
-          echo "Uploading:"
-          ls -la "$STAGING/"
       - name: Upload packages
         uses: actions/upload-artifact@v4
         with:
           name: desktop-${{ matrix.target }}
-          path: /tmp/artifacts/${{ matrix.target }}/*
+          path: |-
+            uniapp/src-tauri/target/release/bundle/**/*.AppImage
+            uniapp/src-tauri/target/release/bundle/**/*.deb
+            uniapp/src-tauri/target/release/bundle/**/*.rpm
+            uniapp/src-tauri/target/release/bundle/**/*.dmg
+            uniapp/src-tauri/target/release/bundle/**/*.msi
+            uniapp/src-tauri/target/release/bundle/**/*.exe
+            uniapp/src-tauri/target/release/bundle/**/*.zip
           retention-days: 1
 
   publish:
