@@ -57,10 +57,21 @@ jobs:
           npx tauri build
 
       - name: Upload artifact
+        shell: bash
+        run: |
+          # Only upload final distributable packages, not intermediate build files
+          BUNDLE="uniapp/src-tauri/target/release/bundle"
+          STAGING="/tmp/artifacts/${{ matrix.target }}"
+          mkdir -p "$STAGING"
+          # Linux: .deb, .AppImage, .rpm, .tar.gz
+          find "$BUNDLE" -type f \( -name "*.deb" -o -name "*.AppImage" -o -name "*.rpm" -o -name "*.tar.gz" -o -name "*.dmg" -o -name "*.msi" -o -name "*.exe" -o -name "*.zip" \) -exec cp {} "$STAGING/" \;
+          echo "Uploading:"
+          ls -la "$STAGING/"
+      - name: Upload packages
         uses: actions/upload-artifact@v4
         with:
           name: desktop-${{ matrix.target }}
-          path: uniapp/src-tauri/target/release/bundle/**/*
+          path: /tmp/artifacts/${{ matrix.target }}/*
           retention-days: 1
 
   publish:
