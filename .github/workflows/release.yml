@@ -36,18 +36,18 @@ jobs:
 
       - name: Build Neutralino app
         run: |
-          # neu build has a bug where it creates .tmp/ in CWD and then
-          # fails trying to copy './' into '.tmp/'. Work around by
-          # building from a subdirectory so CWD != project root.
+          # neu build creates .tmp/ in CWD and then tries to copy './'
+          # into it, which fails. Workaround: add .neuignore to exclude
+          # .tmp/ from the copy operation.
           H5_DIR="$PWD/uniapp/dist/build/h5"
           NEU_DIR="/tmp/neu-build"
           rm -rf "$NEU_DIR"
-          mkdir -p "$NEU_DIR/project/www"
-          cp -r "$H5_DIR"/* "$NEU_DIR/project/www/"
-          cp uniapp/neutralino/neutralino.config.json "$NEU_DIR/project/"
-          cd "$NEU_DIR/project"
+          mkdir -p "$NEU_DIR/www"
+          cp -r "$H5_DIR"/* "$NEU_DIR/www/"
+          cp uniapp/neutralino/neutralino.config.json "$NEU_DIR/"
+          echo ".tmp/" > "$NEU_DIR/.neuignore"
+          cd "$NEU_DIR"
           npx @neutralinojs/neu build --release
-          # Copy dist output back to a known location
           mkdir -p "$NEU_DIR/dist"
           cp -r dist/* "$NEU_DIR/dist/"
 
