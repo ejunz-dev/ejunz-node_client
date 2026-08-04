@@ -41,7 +41,9 @@ jobs:
           # neu build has a bug (creates .tmp/ then tries to copy ./ into
           # it). Build manually: create resources.neu (zip), then copy
           # the Neutralino binary alongside it.
-          H5_DIR="$PWD/uniapp/dist/build/h5"
+          ROOT="$PWD"
+          H5_DIR="$ROOT/uniapp/dist/build/h5"
+          NEU_BIN="$ROOT/uniapp/neutralino/bin"
           NEU_DIR="/tmp/neu-build"
           BINARY_NAME="ejunz-edge-desktop"
           rm -rf "$NEU_DIR"
@@ -54,18 +56,12 @@ jobs:
           cd "$NEU_DIR/www"
           zip -r "$NEU_DIR/dist/$BINARY_NAME/resources.neu" . > /dev/null
 
-          # Copy and rename Neutralino binaries (downloaded by neu update)
-          # neu update downloads to uniapp/neutralino/bin/ as neutralino-{platform}_{arch}
-          # neu build renames them to the configured binaryName
-          NEU_BIN="$PWD/uniapp/neutralino/bin"
-          echo "NEU_BIN=$NEU_BIN"
-          ls -la "$NEU_BIN" 2>/dev/null || echo "bin dir not found"
+          # Copy and rename Neutralino binaries
           if [ -d "$NEU_BIN" ]; then
             for f in "$NEU_BIN"/neutralino-*; do
               [ -f "$f" ] || continue
               base=$(basename "$f")
               suffix="${base#neutralino-}"
-              echo "Copying $f -> $BINARY_NAME-$suffix"
               cp "$f" "$NEU_DIR/dist/$BINARY_NAME/$BINARY_NAME-$suffix"
               chmod +x "$NEU_DIR/dist/$BINARY_NAME/$BINARY_NAME-$suffix"
             done
