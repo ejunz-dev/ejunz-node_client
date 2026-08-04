@@ -38,11 +38,13 @@ core.*
 # npm lockfile (we use yarn)
 package-lock.json
 
-# Desktop (Neutralino)
+# Legacy desktop build artifacts
 desktop/bin/
 desktop/dist/
 desktop/frontend/dist/
-desktop/.tmp/
+
+# Desktop (Tauri)
+uniapp/src-tauri/target/
 
 # uni-app build outputs
 uniapp/dist/
