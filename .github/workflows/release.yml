@@ -4,37 +4,15 @@ on:
   push:
     tags:
       - 'v*'
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 permissions:
   contents: write
 
 jobs:
-  # ── Desktop (Neutralino.js) ──────────────────────────────────────────
   desktop:
-    name: Build desktop (${{ matrix.os }})
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            platform: linux
-            arch: x64
-          - os: ubuntu-latest
-            platform: linux
-            arch: arm64
-          - os: ubuntu-latest
-            platform: linux
-            arch: armhf
-          - os: macos-latest
-            platform: mac
-            arch: arm64
-          - os: macos-latest
-            platform: mac
-            arch: x64
-          - os: windows-latest
-            platform: win
-            arch: x64
-    runs-on: ${{ matrix.os }}
+    name: Build desktop
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -51,83 +29,84 @@ jobs:
       - name: Build uni-app H5
         run: yarn build:h5
 
-      - name: Download Neutralino binary (${{ matrix.platform }}_${{ matrix.arch }})
+      - name: Download Neutralino binaries
         run: |
           cd uniapp/neutralino
           yarn neu update
-        env:
-          NEU_OS: ${{ matrix.platform }}
-          NEU_ARCH: ${{ matrix.arch }}
 
       - name: Build Neutralino app
         run: |
           cd uniapp/neutralino
-          yarn neu build --release --arch ${{ matrix.arch }} --os ${{ matrix.platform }}
+          yarn neu build --release
 
-      - name: Package artifact
-        shell: bash
+      - name: Package artifacts
         run: |
           set -e
           BINARY_NAME="ejunz-edge-desktop"
           DIST_DIR="uniapp/neutralino/dist/${BINARY_NAME}"
-          PKG_DIR="/tmp/package"
+          PKG_DIR="/tmp/packages"
           mkdir -p "$PKG_DIR"
 
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            # Windows: zip the .exe + resources
-            cp "${DIST_DIR}/${BINARY_NAME}-win_x64.exe" "$PKG_DIR/"
-            cp "${DIST_DIR}/resources.neu" "$PKG_DIR/"
-            cd "$PKG_DIR"
-            7z a -tzip "/tmp/ejunz-edge-desktop-win-x64.zip" .
-          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
-            # macOS: create .app bundle
-            APP_DIR="$PKG_DIR/Ejunz Edge.app"
-            mkdir -p "$APP_DIR/Contents/MacOS"
-            cp "${DIST_DIR}/${BINARY_NAME}-mac_${{ matrix.arch }}" "$APP_DIR/Contents/MacOS/${BINARY_NAME}"
-            cp "${DIST_DIR}/resources.neu" "$APP_DIR/Contents/MacOS/"
-            chmod +x "$APP_DIR/Contents/MacOS/${BINARY_NAME}"
-            cat > "$APP_DIR/Contents/Info.plist" <<'PLIST'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>CFBundleName</key><string>Ejunz Edge</string>
-  <key>CFBundleDisplayName</key><string>Ejunz Edge</string>
-  <key>CFBundleIdentifier</key><string>com.ejunz.edge.desktop</string>
-  <key>CFBundleVersion</key><string>${GITHUB_REF_NAME#v}</string>
-  <key>CFBundleShortVersionString</key><string>${GITHUB_REF_NAME#v}</string>
-  <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleExecutable</key><string>${BINARY_NAME}</string>
-  <key>LSMinimumSystemVersion</key><string>11.0</string>
-  <key>NSHighResolutionCapable</key><true/>
-</dict>
-</plist>
+          # Linux packages
+          for arch in x64 arm64 armhf; do
+            name=$(echo "$arch" | tr '_' '-')
+            staging="/tmp/linux-${arch}"
+            mkdir -p "$staging"
+            cp "${DIST_DIR}/${BINARY_NAME}-linux_${arch}" "$staging/"
+            cp "${DIST_DIR}/resources.neu" "$staging/"
+            chmod +x "$staging/${BINARY_NAME}-linux_${arch}"
+            cd "$staging"
+            tar -czvf "${PKG_DIR}/ejunz-edge-desktop-linux-${name}.tar.gz" .
+          done
+
+          # macOS packages (built on Linux via Neutralino cross-compile)
+          for arch in x64 arm64 universal; do
+            if [ -f "${DIST_DIR}/${BINARY_NAME}-mac_${arch}" ]; then
+              app_dir="/tmp/mac-${arch}/Ejunz Edge.app"
+              mkdir -p "$app_dir/Contents/MacOS"
+              cp "${DIST_DIR}/${BINARY_NAME}-mac_${arch}" "$app_dir/Contents/MacOS/${BINARY_NAME}"
+              cp "${DIST_DIR}/resources.neu" "$app_dir/Contents/MacOS/"
+              chmod +x "$app_dir/Contents/MacOS/${BINARY_NAME}"
+              cat > "$app_dir/Contents/Info.plist" <<'PLIST'
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+        <key>CFBundleName</key><string>Ejunz Edge</string>
+        <key>CFBundleDisplayName</key><string>Ejunz Edge</string>
+        <key>CFBundleIdentifier</key><string>com.ejunz.edge.desktop</string>
+        <key>CFBundleVersion</key><string>${GITHUB_REF_NAME#v}</string>
+        <key>CFBundleShortVersionString</key><string>${GITHUB_REF_NAME#v}</string>
+        <key>CFBundlePackageType</key><string>APPL</string>
+        <key>CFBundleExecutable</key><string>${BINARY_NAME}</string>
+        <key>LSMinimumSystemVersion</key><string>11.0</string>
+        <key>NSHighResolutionCapable</key><true/>
+      </dict>
+      </plist>
 PLIST
-            # Create DMG
-            DMG_STAGING="/tmp/dmg-staging-${{ matrix.arch }}"
-            mkdir -p "$DMG_STAGING"
-            cp -R "$PKG_DIR/Ejunz Edge.app" "$DMG_STAGING/"
-            ln -s /Applications "$DMG_STAGING/Applications"
-            hdiutil create -volname "Ejunz Edge" -srcfolder "$DMG_STAGING" -ov -format UDZO \
-              "/tmp/ejunz-edge-desktop-mac-${{ matrix.arch }}.dmg"
-          else
-            # Linux: tar.gz the binary + resources
-            cp "${DIST_DIR}/${BINARY_NAME}-linux_${{ matrix.arch }}" "$PKG_DIR/"
-            cp "${DIST_DIR}/resources.neu" "$PKG_DIR/"
-            chmod +x "$PKG_DIR/${BINARY_NAME}-linux_${{ matrix.arch }}"
-            cd "$PKG_DIR"
-            NAME=$(echo "${{ matrix.arch }}" | tr '_' '-')
-            tar -czvf "/tmp/ejunz-edge-desktop-linux-${NAME}.tar.gz" .
+              # DMG needs hdiutil (macOS only), so just tar.gz the .app
+              cd "/tmp/mac-${arch}"
+              tar -czvf "${PKG_DIR}/ejunz-edge-desktop-mac-${arch}.tar.gz" "Ejunz Edge.app"
+            fi
+          done
+
+          # Windows package
+          if [ -f "${DIST_DIR}/${BINARY_NAME}-win_x64.exe" ]; then
+            staging="/tmp/win"
+            mkdir -p "$staging"
+            cp "${DIST_DIR}/${BINARY_NAME}-win_x64.exe" "$staging/"
+            cp "${DIST_DIR}/resources.neu" "$staging/"
+            cd "$staging"
+            zip -r "${PKG_DIR}/ejunz-edge-desktop-win-x64.zip" .
           fi
 
-      - name: Upload artifact
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: desktop-${{ matrix.platform }}-${{ matrix.arch }}
-          path: /tmp/ejunz-edge-desktop-*
+          name: desktop-packages
+          path: /tmp/packages/*
           retention-days: 1
 
-  # ── H5 (static site) ───────────────────────────────────────────────
   h5:
     name: Build H5
     runs-on: ubuntu-latest
@@ -154,11 +133,49 @@ PLIST
           path: uniapp/dist/build/h5/
           retention-days: 1
 
-  # ── Publish GitHub Release ──────────────────────────────────────────
+  dmg:
+    name: Create macOS DMGs
+    runs-on: macos-latest
+    needs: desktop
+    steps:
+      - name: Download desktop packages
+        uses: actions/download-artifact@v4
+        with:
+          name: desktop-packages
+          path: /tmp/packages
+
+      - name: Extract macOS .app and create DMGs
+        run: |
+          set -e
+          mkdir -p /tmp/dmgs
+          for pkg in /tmp/packages/ejunz-edge-desktop-mac-*.tar.gz; do
+            [ -f "$pkg" ] || continue
+            arch=$(basename "$pkg" | sed 's/ejunz-edge-desktop-mac-//; s/\.tar\.gz//')
+            staging="/tmp/dmg-staging-${arch}"
+            mkdir -p "$staging"
+            tar -xzf "$pkg" -C "$staging"
+            app_path=$(find "$staging" -name "*.app" -type d | head -1)
+            if [ -n "$app_path" ]; then
+              dmg_staging="/tmp/dmg-src-${arch}"
+              mkdir -p "$dmg_staging"
+              cp -R "$app_path" "$dmg_staging/"
+              ln -s /Applications "$dmg_staging/Applications"
+              hdiutil create -volname "Ejunz Edge" -srcfolder "$dmg_staging" -ov -format UDZO \
+                "/tmp/dmgs/ejunz-edge-desktop-mac-${arch}.dmg"
+            fi
+          done
+
+      - name: Upload DMGs
+        uses: actions/upload-artifact@v4
+        with:
+          name: dmgs
+          path: /tmp/dmgs/*
+          retention-days: 1
+
   publish:
     name: Publish GitHub Release
     runs-on: ubuntu-latest
-    needs: [desktop, h5]
+    needs: [desktop, h5, dmg]
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
