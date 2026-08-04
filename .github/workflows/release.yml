@@ -36,16 +36,20 @@ jobs:
 
       - name: Build Neutralino app
         run: |
-          # neu build creates .tmp/ in CWD and cannot copy './' into
-          # itself. Work around by building from a temp directory.
+          # neu build has a bug where it creates .tmp/ in CWD and then
+          # fails trying to copy './' into '.tmp/'. Work around by
+          # building from a subdirectory so CWD != project root.
           H5_DIR="$PWD/uniapp/dist/build/h5"
           NEU_DIR="/tmp/neu-build"
           rm -rf "$NEU_DIR"
-          mkdir -p "$NEU_DIR/www"
-          cp -r "$H5_DIR"/* "$NEU_DIR/www/"
-          cp uniapp/neutralino/neutralino.config.json "$NEU_DIR/"
-          cd "$NEU_DIR"
+          mkdir -p "$NEU_DIR/project/www"
+          cp -r "$H5_DIR"/* "$NEU_DIR/project/www/"
+          cp uniapp/neutralino/neutralino.config.json "$NEU_DIR/project/"
+          cd "$NEU_DIR/project"
           npx @neutralinojs/neu build --release
+          # Copy dist output back to a known location
+          mkdir -p "$NEU_DIR/dist"
+          cp -r dist/* "$NEU_DIR/dist/"
 
       - name: Package artifacts
         run: .github/scripts/package-desktop.sh /tmp/packages
