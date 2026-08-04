@@ -67,6 +67,8 @@ jobs:
             done
           fi
           ls -la "$NEU_DIR/dist/$BINARY_NAME/"
+          echo "=== resources.neu contents ==="
+          unzip -l "$NEU_DIR/dist/$BINARY_NAME/resources.neu" | head -30
 
       - name: Package artifacts
         run: .github/scripts/package-desktop.sh /tmp/packages
