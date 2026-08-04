@@ -43,3 +43,9 @@ desktop/bin/
 desktop/dist/
 desktop/frontend/dist/
 desktop/.tmp/
+
+# uni-app build outputs
+uniapp/dist/
+uniapp/node_modules/
+uniapp/.env.local
+uniapp/.env.*.local
