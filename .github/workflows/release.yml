@@ -36,13 +36,21 @@ jobs:
 
       - name: Build Neutralino app
         run: |
-          rm -rf uniapp/neutralino/www
-          cp -r uniapp/dist/build/h5 uniapp/neutralino/www
-          cd uniapp/neutralino
-          yarn neu build --release
+          # neu build creates .tmp/ in CWD and cannot copy './' into
+          # itself. Work around by building from a temp directory.
+          H5_DIR="$PWD/uniapp/dist/build/h5"
+          NEU_DIR="/tmp/neu-build"
+          rm -rf "$NEU_DIR"
+          mkdir -p "$NEU_DIR/www"
+          cp -r "$H5_DIR"/* "$NEU_DIR/www/"
+          cp uniapp/neutralino/neutralino.config.json "$NEU_DIR/"
+          cd "$NEU_DIR"
+          npx @neutralinojs/neu build --release
 
       - name: Package artifacts
         run: .github/scripts/package-desktop.sh /tmp/packages
+        env:
+          NEU_DIST_DIR: /tmp/neu-build/dist/ejunz-edge-desktop
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
