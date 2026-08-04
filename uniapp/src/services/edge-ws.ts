@@ -1,5 +1,6 @@
 import { reactive } from 'vue'
 import { getEdgeWsUrl } from './api'
+import { isMiniProgram, isApp } from '@/utils/platform'
 import type { DeviceSnapshotMessage, DeviceStateMessage } from '@/types/edge'
 
 export type EdgeWsStatus = 'connecting' | 'connected' | 'disconnected'
@@ -14,9 +15,13 @@ type PendingRequest = {
 }
 
 const EDGE_WS_PROTOCOL = 'edge-ws/v1'
-const CONNECT_TIMEOUT = 10000
-const REQUEST_TIMEOUT = 10000
-const INITIAL_RECONNECT_DELAY = 3000
+
+// Platform-specific timeouts and delays
+// Mini-programs often have stricter WebSocket timeout limits
+const CONNECT_TIMEOUT = isMiniProgram() ? 8000 : 10000
+const REQUEST_TIMEOUT = isMiniProgram() ? 8000 : 10000
+// Native apps may have more stable connections, use longer initial delay
+const INITIAL_RECONNECT_DELAY = isApp() ? 5000 : 3000
 const MAX_RECONNECT_DELAY = 30000
 
 export const edgeWsState = reactive({

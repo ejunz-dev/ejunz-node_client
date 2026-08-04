@@ -1,5 +1,6 @@
 import { clearCredentials, loadCredentials, saveCredentials, type SavedCredentials } from './storage'
 import { buildApiUrl, buildEdgeWsUrl, normalizeServerUrl } from '@/utils/url'
+import { isMiniProgram, isApp } from '@/utils/platform'
 import type { AuthConfig, Device, EdgeNode, EdgeStatus, UpstreamConfig } from '@/types/edge'
 
 let credentials: SavedCredentials = { serverUrl: '', username: '', password: '' }
@@ -14,19 +15,45 @@ export function restoreCredentials(): boolean { const saved = loadCredentials();
 export function disconnect(): void { credentials = { serverUrl: '', username: '', password: '' }; clearCredentials() }
 
 export class ApiError extends Error { constructor(public status: number, message: string) { super(message); this.name = 'ApiError' } }
+
+/**
+ * Get the default request timeout based on platform.
+ * Mini-programs and native apps may have different network characteristics.
+ */
+function getDefaultTimeout(): number {
+  // Mini-programs often have stricter timeout limits
+  if (isMiniProgram()) return 10000
+  // Native apps can use longer timeouts
+  if (isApp()) return 20000
+  // H5 default
+  return 15000
+}
+
 export async function api<T>(path: string, options: Omit<UniApp.RequestOptions, 'url'> = {}): Promise<T> {
   if (!credentials.serverUrl) throw new ApiError(0, '未连接到 Edge 服务器')
   const url = buildApiUrl(credentials.serverUrl, path, credentials.password)
   const headers: Record<string, string> = { ...(options.header || {}) }
   if (options.data !== undefined && !headers['Content-Type']) headers['Content-Type'] = 'application/json'
+  const timeout = options.timeout ?? getDefaultTimeout()
   return new Promise<T>((resolve, reject) => {
-    uni.request({ ...options, url, header: headers, timeout: options.timeout ?? 15000,
+    uni.request({
+      ...options,
+      url,
+      header: headers,
+      timeout,
       success: (response) => {
         const body = response.data as any
-        if (response.statusCode < 200 || response.statusCode >= 300) { reject(new ApiError(response.statusCode, body?.error || `HTTP ${response.statusCode}`)); return }
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          reject(new ApiError(response.statusCode, body?.error || `HTTP ${response.statusCode}`))
+          return
+        }
         resolve(body as T)
       },
-      fail: (error) => reject(new ApiError(0, error.errMsg || '网络请求失败'))
+      fail: (error) => {
+        // Provide platform-specific error messages
+        const message = error.errMsg || '网络请求失败'
+        reject(new ApiError(0, message))
+      },
     })
   })
 }
