@@ -1,6 +1,6 @@
 {
   "name": "@ejunz/node-client-uniapp",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,8 +8,22 @@
     "build:h5": "uni build -p h5",
     "dev:app": "uni -p app",
     "build:app": "uni build -p app",
+    "dev:app-android": "uni -p app --platform android",
+    "build:app-android": "uni build -p app --platform android",
+    "dev:app-ios": "uni -p app --platform ios",
+    "build:app-ios": "uni build -p app --platform ios",
     "dev:mp-weixin": "uni -p mp-weixin",
     "build:mp-weixin": "uni build -p mp-weixin",
+    "dev:mp-alipay": "uni -p mp-alipay",
+    "build:mp-alipay": "uni build -p mp-alipay",
+    "dev:mp-baidu": "uni -p mp-baidu",
+    "build:mp-baidu": "uni build -p mp-baidu",
+    "dev:mp-toutiao": "uni -p mp-toutiao",
+    "build:mp-toutiao": "uni build -p mp-toutiao",
+    "dev:mp-qq": "uni -p mp-qq",
+    "build:mp-qq": "uni build -p mp-qq",
+    "dev:quickapp": "uni -p quickapp-webview",
+    "build:quickapp": "uni build -p quickapp-webview",
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
@@ -17,6 +31,11 @@
     "@dcloudio/uni-app-plus": "3.0.0-alpha-5020320260731001",
     "@dcloudio/uni-h5": "3.0.0-alpha-5020320260731001",
     "@dcloudio/uni-mp-weixin": "3.0.0-alpha-5020320260731001",
+    "@dcloudio/uni-mp-alipay": "3.0.0-alpha-5020320260731001",
+    "@dcloudio/uni-mp-baidu": "3.0.0-alpha-5020320260731001",
+    "@dcloudio/uni-mp-toutiao": "3.0.0-alpha-5020320260731001",
+    "@dcloudio/uni-mp-qq": "3.0.0-alpha-5020320260731001",
+    "@dcloudio/uni-quickapp-webview": "3.0.0-alpha-5020320260731001",
     "pinia": "^3.0.3",
     "vue": "^3.5.22"
   },
