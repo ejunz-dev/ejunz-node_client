@@ -51,9 +51,9 @@ jobs:
           # Copy H5 build output
           cp -r "$H5_DIR"/* "$NEU_DIR/www/"
 
-          # Create resources.neu (zip of www contents)
+          # Create resources.neu (zip of www contents, store mode)
           cd "$NEU_DIR/www"
-          zip -r "$NEU_DIR/dist/$BINARY_NAME/resources.neu" . > /dev/null
+          zip -r -0 "$NEU_DIR/dist/$BINARY_NAME/resources.neu" . > /dev/null
 
           # Copy and rename Neutralino binaries
           if [ -d "$NEU_BIN" ]; then
