@@ -5,9 +5,43 @@
   "versionName": "2.0.0",
   "versionCode": "200",
   "transformPx": false,
-  "h5": { "title": "Ejunz Edge" },
+  "h5": {
+    "title": "Ejunz Edge"
+  },
   "app-plus": {
     "usingComponents": true,
-    "splashscreen": { "alwaysShowBeforeRender": true, "autoclose": true }
+    "splashscreen": {
+      "alwaysShowBeforeRender": true,
+      "autoclose": true
+    },
+    "distribute": {
+      "ios": {
+        "appid": "com.ejunz.edge",
+        "displayName": "Ejunz Edge",
+        "devices": "iphone,ipad",
+        "dpi": "3"
+      },
+      "android": {
+        "packageName": "com.ejunz.edge",
+        "versionName": "2.0.0",
+        "versionCode": "200",
+        "minSdkVersion": 24,
+        "targetSdkVersion": 34,
+        "abiFilters": ["arm64-v8a", "armeabi-v7a", "x86_64"]
+      }
+    },
+    "permissions": {
+      "network": {
+        "description": "连接 Edge 服务器"
+      }
+    }
+  },
+  "mp-weixin": {
+    "appid": "",
+    "setting": {
+      "urlCheck": false,
+      "es6": true
+    },
+    "usingComponents": true
   }
 }

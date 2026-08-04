@@ -1,16 +1,22 @@
 # Ejunz Edge Client
 
-iOS/Android client for connecting to an `ejunz-node` **Edge** server, managing remote nodes, and controlling Zigbee devices.
+Multi-platform client for connecting to an `ejunz-node` **Edge** server, managing remote nodes, and controlling Zigbee devices.
 
-Built with **CapacitorJS** + **Vite** + **React/TypeScript** — one codebase for both iOS and Android.
+Built with **uni-app 3.x** (Vue 3 + TypeScript + Pinia) — one codebase for **all platforms**.
 
-## Tech Stack
+## Supported Platforms
 
-- **Frontend**: React 18 + TypeScript + React Router
-- **Build**: Vite 6 (`@vitejs/plugin-react`, HMR)
-- **Shell**: CapacitorJS 7 (iOS: WKWebView / Android: WebView)
-- **API**: Edge REST API (`/api/edge/*`, HTTP Basic Auth)
-- **Storage**: `localStorage` (connection credentials)
+| Platform | Target | Status |
+|----------|--------|--------|
+| H5 (Web) | Browser / PWA | ✅ |
+| iOS | Native App | ✅ |
+| Android | Native App | ✅ |
+| mp-weixin | WeChat Mini Program | ✅ |
+| mp-alipay | Alipay Mini Program | ✅ |
+| mp-baidu | Baidu Smart Mini Program | ✅ |
+| mp-toutiao | Douyin/Toutiao Mini Program | ✅ |
+| mp-qq | QQ Mini Program | ✅ |
+| quickapp | Quick App (快应用) | ✅ |
 
 ## Quick Start
 
@@ -18,64 +24,92 @@ Built with **CapacitorJS** + **Vite** + **React/TypeScript** — one codebase fo
 # Install dependencies
 yarn install
 
-# Build the frontend
-yarn build
+# H5 development
+yarn dev:h5
 
-# Sync to native platforms
-yarn sync
+# H5 production build
+yarn build:h5
 
-# Open native IDE
-yarn open ios      # macOS + Xcode
-yarn open android   # Android Studio
+# Type check
+yarn typecheck
 ```
 
-## Development (Hot Reload)
+## Development
+
+### H5 (Browser)
 
 ```bash
-# Start Vite dev server (port 3000, HMR, API proxy to :5283)
-yarn dev
-
-# Open http://localhost:3000 in your browser
-# Changes to ui/app/ are hot-reloaded automatically
+yarn dev:h5
+# Open http://localhost:5175
 ```
 
-Live reload on a native device:
+The Vite dev server proxies `/api/edge` requests to the Edge server (configurable via `EDGE_PROXY_TARGET` env var).
+
+### Native App (iOS/Android)
 
 ```bash
-# iOS simulator
-yarn cap:dev
+# Build for all app platforms
+yarn build:app
 
-# Android emulator / device
-yarn cap:dev:android
+# iOS-specific build
+yarn build:app-ios
+
+# Android-specific build
+yarn build:app-android
+```
+
+### Mini Programs
+
+```bash
+# WeChat Mini Program
+yarn dev:mp-weixin
+# Open dist/build/mp-weixin in WeChat DevTools
+
+# Alipay Mini Program
+yarn dev:mp-alipay
+
+# Baidu Mini Program
+yarn dev:mp-baidu
+
+# Douyin Mini Program
+yarn dev:mp-toutiao
+
+# QQ Mini Program
+yarn dev:mp-qq
+```
+
+### Quick App
+
+```bash
+yarn dev:quickapp
+yarn build:quickapp
 ```
 
 ## Project Structure
 
 ```
-ui/                   ← React/TSX source (development directory)
-  app/
-    index.tsx         ← Entry point
-    App.tsx           ← Router + layout
-    api.ts            ← Edge API wrapper (/api/edge/*)
-    components/
-      Header.tsx      ← Navigation bar
-    pages/
-      Connect.tsx     ← Connect to Edge server
-      Dashboard.tsx   ← Overview (node stats, upstream status)
-      Nodes.tsx       ← Node management (authorize/revoke)
-      Devices.tsx     ← Device control (select node → toggle devices)
-  vite.config.ts      ← Vite config (proxy, output dir)
-  index.html          ← HTML entry
-  package.json        ← UI workspace dependencies
-  tsconfig.json
-www/                  ← Build output (Capacitor webDir)
-  index.html
-  assets/
-ios/                  ← Xcode project (Capacitor-generated)
-android/              ← Android Studio project (Capacitor-generated)
-capacitor.config.json ← Capacitor configuration
-package.json          ← Root workspace config
+uniapp/               ← uni-app source (all platforms)
+  src/
+    pages/            ← Page components (login, dashboard, nodes, devices, settings)
+    components/       ← Reusable UI components
+    services/         ← API client, WebSocket, storage
+    stores/           ← Pinia state management
+    utils/            ← URL helpers, status formatting, platform detection
+    types/            ← TypeScript type definitions
+    manifest.json     ← Platform configuration
+    pages.json        ← Page routing and tab bar
+  vite.config.ts      ← Vite + uni-app plugin config
+  package.json        ← uni-app workspace dependencies
+  README.md           ← Detailed uni-app documentation
+
+ui/                   ← Legacy React/Mantine UI (deprecated, replaced by uniapp/)
+desktop/              ← Legacy Neutralino.js desktop app (deprecated)
+ios/                  ← Legacy Capacitor iOS project (deprecated)
+android/              ← Legacy Capacitor Android project (deprecated)
+capacitor.config.json ← Legacy Capacitor config (deprecated)
 ```
+
+> **Note:** The `ui/`, `desktop/`, `ios/`, and `android/` directories are legacy artifacts from the previous React + Capacitor stack. All new development uses the `uniapp/` directory.
 
 ## Edge API
 
@@ -92,28 +126,23 @@ The client manages the Edge server through its REST API:
 | GET/POST | `/api/edge/auth-config` | Authentication configuration |
 | GET/POST | `/api/edge/upstream` | Upstream connection configuration |
 
-The MVP uses HTTP Basic Auth. Production deployments should use HTTPS.
-
 ## Connection Addresses
 
 - LAN Edge: `http://192.168.1.100:5283`
 - Remote (via FRP): `http://47.86.164.129:10031`
 
-## uni-app client
+## Platform-specific Code
 
-The standalone Vue 3 + TypeScript + Pinia client lives in `uniapp/`. It targets H5, native uni-app, and WeChat Mini Program builds without importing React, Capacitor, or Neutralino.
+Use uni-app's conditional compilation (`#ifdef` / `#ifndef`) in `.vue` files, or the runtime platform utilities in `uniapp/src/utils/platform.ts`:
 
-```bash
-yarn install
-yarn dev:uni             # uni-app H5 development
-yarn build:uni           # uni-app H5 production
-yarn typecheck
+```typescript
+import { isApp, isMiniProgram, isH5 } from '@/utils/platform'
 
-# Existing React/Capacitor client
-yarn dev
-yarn build
-yarn dev:mp-weixin      # WeChat Mini Program development
-yarn build:mp-weixin    # WeChat Mini Program build
+if (isApp()) {
+  // Native app-specific logic
+} else if (isMiniProgram()) {
+  // Mini-program specific logic
+}
 ```
 
-See [`uniapp/README.md`](uniapp/README.md) for the page, REST, session, device-state merge, and `edge-ws/v1` implementation details.
+See [`uniapp/README.md`](uniapp/README.md) for detailed implementation documentation.

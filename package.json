@@ -1,45 +1,36 @@
 {
   "name": "ejunz-node-client",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "packageManager": "yarn@4.2.0",
   "workspaces": [
-    "ui",
-    "desktop",
-    "desktop/frontend",
     "uniapp"
   ],
   "scripts": {
-    "dev": "yarn workspace @ejunz/node-client-ui dev:ui",
-    "build": "yarn workspace @ejunz/node-client-ui build:ui",
     "typecheck": "yarn workspace @ejunz/node-client-uniapp typecheck",
-    "dev:uni": "yarn workspace @ejunz/node-client-uniapp dev:h5",
-    "build:uni": "yarn workspace @ejunz/node-client-uniapp build:h5",
-    "dev:uniapp": "yarn workspace @ejunz/node-client-uniapp dev:h5",
-    "build:uniapp": "yarn workspace @ejunz/node-client-uniapp build:h5",
+
+    "dev:h5": "yarn workspace @ejunz/node-client-uniapp dev:h5",
+    "build:h5": "yarn workspace @ejunz/node-client-uniapp build:h5",
+
     "dev:app": "yarn workspace @ejunz/node-client-uniapp dev:app",
     "build:app": "yarn workspace @ejunz/node-client-uniapp build:app",
+    "dev:app-ios": "yarn workspace @ejunz/node-client-uniapp dev:app-ios",
+    "build:app-ios": "yarn workspace @ejunz/node-client-uniapp build:app-ios",
+    "dev:app-android": "yarn workspace @ejunz/node-client-uniapp dev:app-android",
+    "build:app-android": "yarn workspace @ejunz/node-client-uniapp build:app-android",
+
     "dev:mp-weixin": "yarn workspace @ejunz/node-client-uniapp dev:mp-weixin",
     "build:mp-weixin": "yarn workspace @ejunz/node-client-uniapp build:mp-weixin",
-    "dev:desktop": "yarn workspace @ejunz/node-client-desktop-ui dev",
-    "build:desktop": "yarn workspace @ejunz/node-client-desktop-ui build && yarn workspace @ejunz/node-client-desktop build",
-    "dev:legacy-ui": "yarn workspace @ejunz/node-client-ui dev:ui",
-    "build:legacy-ui": "yarn workspace @ejunz/node-client-ui build:ui",
-    "neu:dev": "yarn workspace @ejunz/node-client-desktop dev",
-    "sync": "yarn exec cap sync",
-    "sync:ios": "yarn exec cap sync ios",
-    "sync:android": "yarn exec cap sync android",
-    "open:ios": "yarn exec cap open ios",
-    "open:android": "yarn exec cap open android",
-    "cap:dev": "yarn dev:legacy-ui & sleep 2 && yarn exec cap run ios --livereload-url=http://localhost:3000",
-    "cap:dev:android": "yarn dev:legacy-ui & sleep 2 && yarn exec cap run android --livereload-url=http://localhost:3000"
-  },
-  "dependencies": {
-    "@capacitor/android": "^7.6.8",
-    "@capacitor/core": "^7.6.8",
-    "@capacitor/ios": "^7.6.8"
-  },
-  "devDependencies": {
-    "@capacitor/cli": "^7.6.8"
+    "dev:mp-alipay": "yarn workspace @ejunz/node-client-uniapp dev:mp-alipay",
+    "build:mp-alipay": "yarn workspace @ejunz/node-client-uniapp build:mp-alipay",
+    "dev:mp-baidu": "yarn workspace @ejunz/node-client-uniapp dev:mp-baidu",
+    "build:mp-baidu": "yarn workspace @ejunz/node-client-uniapp build:mp-baidu",
+    "dev:mp-toutiao": "yarn workspace @ejunz/node-client-uniapp dev:mp-toutiao",
+    "build:mp-toutiao": "yarn workspace @ejunz/node-client-uniapp build:mp-toutiao",
+    "dev:mp-qq": "yarn workspace @ejunz/node-client-uniapp dev:mp-qq",
+    "build:mp-qq": "yarn workspace @ejunz/node-client-uniapp build:mp-qq",
+
+    "dev:quickapp": "yarn workspace @ejunz/node-client-uniapp dev:quickapp",
+    "build:quickapp": "yarn workspace @ejunz/node-client-uniapp build:quickapp"
   }
 }

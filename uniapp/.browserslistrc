@@ -1,0 +1,11 @@
+# H5 targets (modern browsers)
+last 2 versions
+> 1%
+not dead
+
+# App targets (iOS/Android WebView)
+iOS >= 12
+Android >= 5
+
+# Mini-program targets (platform-specific WebView)
+chrome >= 53
