@@ -4,7 +4,7 @@
   "version": "2.0.0",
   "defaultMode": "window",
   "port": 59201,
-  "documentRoot": "../dist/build/h5/",
+  "documentRoot": "/www/",
   "url": "/",
   "enableServer": true,
   "enableNativeAPI": true,
