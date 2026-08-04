@@ -31,6 +31,14 @@
     "build:mp-qq": "yarn workspace @ejunz/node-client-uniapp build:mp-qq",
 
     "dev:quickapp": "yarn workspace @ejunz/node-client-uniapp dev:quickapp",
-    "build:quickapp": "yarn workspace @ejunz/node-client-uniapp build:quickapp"
+    "build:quickapp": "yarn workspace @ejunz/node-client-uniapp build:quickapp",
+
+    "dev:desktop": "yarn workspace @ejunz/node-client-uniapp dev:desktop",
+    "build:desktop": "yarn workspace @ejunz/node-client-uniapp build:desktop",
+    "dev:electron": "yarn workspace @ejunz/node-client-uniapp dev:electron",
+    "build:electron": "yarn workspace @ejunz/node-client-uniapp build:electron",
+    "build:electron:linux": "yarn workspace @ejunz/node-client-uniapp build:electron:linux",
+    "build:electron:mac": "yarn workspace @ejunz/node-client-uniapp build:electron:mac",
+    "build:electron:win": "yarn workspace @ejunz/node-client-uniapp build:electron:win"
   }
 }

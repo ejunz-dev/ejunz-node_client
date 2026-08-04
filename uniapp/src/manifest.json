@@ -43,5 +43,25 @@
       "es6": true
     },
     "usingComponents": true
+  },
+  "desktop": {
+    "name": "Ejunz Edge Desktop",
+    "description": "Ejunz Edge node and Zigbee device manager — Desktop",
+    "appid": "com.ejunz.edge.desktop",
+    "electron": {
+      "title": "Ejunz Edge",
+      "icon": "static/icon.png",
+      "width": 1280,
+      "height": 800,
+      "minWidth": 900,
+      "minHeight": 600,
+      "resizable": true,
+      "fullscreen": false,
+      "center": true,
+      "frame": true,
+      "autoHideMenuBar": true,
+      "nodeIntegration": false,
+      "webviewTag": true
+    }
   }
 }

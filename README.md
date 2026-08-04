@@ -17,6 +17,7 @@ Built with **uni-app 3.x** (Vue 3 + TypeScript + Pinia) — one codebase for **a
 | mp-toutiao | Douyin/Toutiao Mini Program | ✅ |
 | mp-qq | QQ Mini Program | ✅ |
 | quickapp | Quick App (快应用) | ✅ |
+| Desktop (Electron) | macOS / Windows / Linux | ✅ |
 
 ## Quick Start
 
@@ -85,6 +86,26 @@ yarn dev:quickapp
 yarn build:quickapp
 ```
 
+### Desktop (Electron)
+
+```bash
+# Desktop development (HMR)
+yarn dev:desktop
+
+# Desktop production build
+yarn build:desktop
+
+# Package for all platforms
+yarn build:electron
+
+# Platform-specific packages
+yarn build:electron:linux   # AppImage + deb
+yarn build:electron:mac     # DMG + zip
+yarn build:electron:win     # NSIS installer + portable
+```
+
+The desktop app uses Electron via uni-app's desktop platform. Window config (size, icon, frameless mode) is in `uniapp/src/manifest.json` under the `"desktop"` key. Electron builder config is in `uniapp/electron-builder.json`.
+
 ## Project Structure
 
 ```
@@ -96,9 +117,11 @@ uniapp/               ← uni-app source (all platforms)
     stores/           ← Pinia state management
     utils/            ← URL helpers, status formatting, platform detection
     types/            ← TypeScript type definitions
-    manifest.json     ← Platform configuration
+    manifest.json     ← Platform configuration (incl. desktop/Electron)
     pages.json        ← Page routing and tab bar
   vite.config.ts      ← Vite + uni-app plugin config
+  electron-builder.json ← Electron packaging config
+  static/             ← Desktop app icons and assets
   package.json        ← uni-app workspace dependencies
   README.md           ← Detailed uni-app documentation
 
@@ -109,7 +132,7 @@ android/              ← Legacy Capacitor Android project (deprecated)
 capacitor.config.json ← Legacy Capacitor config (deprecated)
 ```
 
-> **Note:** The `ui/`, `desktop/`, `ios/`, and `android/` directories are legacy artifacts from the previous React + Capacitor stack. All new development uses the `uniapp/` directory.
+> **Note:** The `ui/`, `desktop/`, `ios/`, and `android/` directories are legacy artifacts from the previous React + Capacitor + Neutralino stack. All new development uses the `uniapp/` directory, which now includes desktop (Electron) support alongside all other platforms.
 
 ## Edge API
 
@@ -136,12 +159,16 @@ The client manages the Edge server through its REST API:
 Use uni-app's conditional compilation (`#ifdef` / `#ifndef`) in `.vue` files, or the runtime platform utilities in `uniapp/src/utils/platform.ts`:
 
 ```typescript
-import { isApp, isMiniProgram, isH5 } from '@/utils/platform'
+import { isApp, isMiniProgram, isH5, isDesktop } from '@/utils/platform'
 
 if (isApp()) {
-  // Native app-specific logic
+  // Native app-specific logic (iOS/Android)
+} else if (isDesktop()) {
+  // Desktop-specific logic (Electron)
 } else if (isMiniProgram()) {
   // Mini-program specific logic
+} else if (isH5()) {
+  // Browser-specific logic
 }
 ```
 
