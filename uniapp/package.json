@@ -24,9 +24,8 @@
     "build:mp-qq": "uni build -p mp-qq",
     "dev:quickapp": "uni -p quickapp-webview",
     "build:quickapp": "uni build -p quickapp-webview",
-    "dev:desktop": "yarn build:h5 && rm -rf neutralino/www && cp -r dist/build/h5 neutralino/www && cd neutralino && neu run --frontend-lib-dev",
-    "build:desktop": "yarn build:h5 && rm -rf neutralino/www && cp -r dist/build/h5 neutralino/www && cd neutralino && neu build --release",
-    "desktop:update": "cd neutralino && neu update",
+    "dev:desktop": "yarn build:h5 && cd src-tauri && cargo tauri dev",
+    "build:desktop": "yarn build:h5 && cd src-tauri && cargo tauri build",
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
@@ -45,7 +44,7 @@
   "devDependencies": {
     "@dcloudio/types": "^3.4.32",
     "@dcloudio/vite-plugin-uni": "3.0.0-alpha-5020320260731001",
-    "@neutralinojs/neu": "^11.1.0",
+    "@tauri-apps/cli": "^2",
     "@types/node": "^22.15.0",
     "sass-embedded": "^1.89.2",
     "typescript": "^5.8.3",

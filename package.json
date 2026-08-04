@@ -29,7 +29,6 @@
     "dev:quickapp": "yarn workspace @ejunz/node-client-uniapp dev:quickapp",
     "build:quickapp": "yarn workspace @ejunz/node-client-uniapp build:quickapp",
     "dev:desktop": "yarn workspace @ejunz/node-client-uniapp dev:desktop",
-    "build:desktop": "yarn workspace @ejunz/node-client-uniapp build:desktop",
-    "desktop:update": "yarn workspace @ejunz/node-client-uniapp desktop:update"
+    "build:desktop": "yarn workspace @ejunz/node-client-uniapp build:desktop"
   }
 }
