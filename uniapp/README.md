@@ -13,7 +13,7 @@ Standalone Vue 3 + TypeScript + Pinia client for the Ejunz Edge REST and `edge-w
 | mp-toutiao | Douyin/Toutiao Mini Program | ✅ |
 | mp-qq | QQ Mini Program | ✅ |
 | quickapp | Quick App (快应用) | ✅ |
-| Desktop (Electron) | macOS / Windows / Linux | ✅ |
+| Desktop (Neutralino.js) | macOS / Windows / Linux | ✅ |
 
 ## Commands
 
@@ -49,14 +49,10 @@ yarn build:mp-qq       # QQ Mini Program build
 yarn dev:quickapp      # Quick App development
 yarn build:quickapp    # Quick App build
 
-# Desktop (Electron)
-yarn dev:desktop       # Desktop development (HMR)
-yarn build:desktop     # Desktop production build
-yarn dev:electron      # Desktop dev with Electron window
-yarn build:electron    # Package for all platforms
-yarn build:electron:linux  # Linux (AppImage + deb)
-yarn build:electron:mac    # macOS (DMG + zip)
-yarn build:electron:win    # Windows (NSIS + portable)
+# Desktop (Neutralino.js)
+yarn dev:desktop       # Build H5 + run in Neutralino window (HMR)
+yarn build:desktop     # Production build (H5 + Neutralino package)
+yarn desktop:update    # Update Neutralino binaries
 ```
 
 ## Structure
@@ -79,13 +75,12 @@ Use `uni.getSystemInfoSync().platform` or the `#ifdef` preprocessor in `.vue` fi
 <!-- #ifdef H5 -->
 <view>Only shown in browser</view>
 <!-- #endif -->
-<!-- #ifdef DESKTOP -->
-<view>Only shown in Desktop (Electron)</view>
-<!-- #endif -->
 <!-- #ifdef MP-WEIXIN -->
 <view>Only shown in WeChat Mini Program</view>
 <!-- #endif -->
 ```
+
+> **Note:** Desktop (Neutralino) uses runtime detection, not build-time `#ifdef`. Use `isDesktop()` from `@/utils/platform` instead.
 
 See the [uni-app conditional compilation docs](https://uniapp.dcloud.net.cn/tutorial/platform.html) for all available platform identifiers.
 
@@ -117,45 +112,34 @@ yarn dev:mp-weixin
 # Open the dist/build/mp-weixin directory in WeChat DevTools
 ```
 
-### Desktop (Electron)
+### Desktop (Neutralino.js)
 
 ```bash
-# Desktop development (HMR in browser)
+# Build H5 + run in Neutralino window (HMR via Vite dev server)
 yarn dev:desktop
-# Open http://localhost:5176
 
-# Desktop development with Electron window
-yarn dev:electron
-
-# Production build
+# Production build (H5 build + Neutralino package)
 yarn build:desktop
 
-# Package installers for all platforms
-yarn build:electron
+# Update Neutralino binaries
+yarn desktop:update
 ```
 
-Window configuration (size, icon, frameless) is in `src/manifest.json` under `"desktop"` → `"electron"`. Electron builder config is in `electron-builder.json`.
+The desktop app uses **Neutralino.js** — a lightweight (~3 MB) alternative to Electron. It wraps the uni-app H5 build in a native OS window.
 
-Desktop-specific conditional compilation:
+- Window config (size, title, icon) is in `neutralino/neutralino.config.json`
+- Neutralino binaries are downloaded by `neu update` into `neutralino/bin/`
+- The H5 build output at `dist/build/h5/` is served as the Neutralino frontend
 
-```vue
-<!-- #ifdef DESKTOP -->
-<view>Only shown in Desktop (Electron)</view>
-<!-- #endif -->
-<!-- #ifndef DESKTOP -->
-<view>Hidden on Desktop</view>
-<!-- #endif -->
-```
-
-Runtime detection:
+Runtime detection (Neutralino is detected at runtime, not build-time):
 
 ```typescript
 import { isDesktop, isDesktopOS } from '@/utils/platform'
 
 if (isDesktop()) {
-  // Running inside Electron
+  // Running inside Neutralino desktop window
 } else if (isDesktopOS()) {
-  // Running on a desktop OS (macOS/Windows/Linux) but not in Electron
+  // Running on a desktop OS (macOS/Windows/Linux) but not in Neutralino
 }
 ```
 

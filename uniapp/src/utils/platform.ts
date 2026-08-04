@@ -6,7 +6,7 @@
  * conditional rendering, prefer uni-app's `#ifdef` preprocessor comments.
  */
 
-export type UniPlatform = 'ios' | 'android' | 'h5' | 'desktop' | 'mp-weixin' | 'mp-alipay' | 'mp-baidu' | 'mp-toutiao' | 'mp-qq' | 'quickapp-webview' | 'app' | 'unknown'
+export type UniPlatform = 'ios' | 'android' | 'h5' | 'neutralino' | 'mp-weixin' | 'mp-alipay' | 'mp-baidu' | 'mp-toutiao' | 'mp-qq' | 'quickapp-webview' | 'app' | 'unknown'
 
 let cachedPlatform: UniPlatform | null = null
 let cachedSystemInfo: UniApp.GetSystemInfoResult | null = null
@@ -49,11 +49,27 @@ export function getPlatform(): UniPlatform {
   // #ifdef QUICKAPP-WEBVIEW
   cachedPlatform = 'quickapp-webview'
   // #endif
-  // #ifdef DESKTOP
-  cachedPlatform = 'desktop'
-  // #endif
   if (!cachedPlatform) cachedPlatform = 'unknown'
+
+  // Runtime override: detect Neutralino desktop wrapper.
+  // Neutralino serves the H5 build in a native WebView, so the build-time
+  // platform is 'h5'. Check for the Neutralino runtime API at runtime.
+  if (cachedPlatform === 'h5' && isNeutralinoRuntime()) {
+    cachedPlatform = 'neutralino'
+  }
+
   return cachedPlatform
+}
+
+/** Check if the Neutralino native runtime API is available. */
+function isNeutralinoRuntime(): boolean {
+  try {
+    return typeof window !== 'undefined' &&
+      (window as any).__NL_OS !== undefined &&
+      (window as any).__NL_APPID !== undefined
+  } catch {
+    return false
+  }
 }
 
 /** Reset cached platform info (useful in tests or after environment change). */
@@ -78,9 +94,9 @@ export function isH5(): boolean {
   return getPlatform() === 'h5'
 }
 
-/** Is the current platform Desktop (Electron)? */
+/** Is the current platform Desktop (Neutralino)? */
 export function isDesktop(): boolean {
-  return getPlatform() === 'desktop'
+  return getPlatform() === 'neutralino'
 }
 
 /** Is the current platform a desktop OS (macOS/Windows/Linux)? */
