@@ -54,10 +54,18 @@ jobs:
           cd "$NEU_DIR/www"
           zip -r "$NEU_DIR/dist/$BINARY_NAME/resources.neu" . > /dev/null
 
-          # Copy Neutralino binary (downloaded by neu update)
+          # Copy and rename Neutralino binaries (downloaded by neu update)
+          # neu update downloads to uniapp/neutralino/bin/ as neutralino-{platform}_{arch}
+          # neu build renames them to the configured binaryName
           NEU_BIN="$PWD/uniapp/neutralino/bin"
           if [ -d "$NEU_BIN" ]; then
-            cp "$NEU_BIN"/* "$NEU_DIR/dist/$BINARY_NAME/" 2>/dev/null || true
+            for f in "$NEU_BIN"/neutralino-*; do
+              [ -f "$f" ] || continue
+              base=$(basename "$f")
+              suffix="${base#neutralino-}"
+              cp "$f" "$NEU_DIR/dist/$BINARY_NAME/$BINARY_NAME-$suffix"
+              chmod +x "$NEU_DIR/dist/$BINARY_NAME/$BINARY_NAME-$suffix"
+            done
           fi
           ls -la "$NEU_DIR/dist/$BINARY_NAME/"
 
