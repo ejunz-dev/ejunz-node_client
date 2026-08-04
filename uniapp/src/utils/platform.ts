@@ -54,7 +54,8 @@ export function getPlatform(): UniPlatform {
   // Runtime override: detect Neutralino desktop wrapper.
   // Neutralino serves the H5 build in a native WebView, so the build-time
   // platform is 'h5'. Check for the Neutralino runtime API at runtime.
-  if (cachedPlatform === 'h5' && isNeutralinoRuntime()) {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if ((cachedPlatform as UniPlatform) === 'h5' && isNeutralinoRuntime()) {
     cachedPlatform = 'neutralino'
   }
 
@@ -120,7 +121,8 @@ export function isAndroid(): boolean {
 /** Get the operating system name for display. */
 export function getOSName(): string {
   const info = getSystemInfo()
-  if (info.osOriginalVersion) return info.osOriginalVersion
+  const osVer = (info as any).osOriginalVersion
+  if (osVer) return osVer
   if (info.platform === 'ios') return 'iOS'
   if (info.platform === 'android') return 'Android'
   if (info.platform === 'mac') return 'macOS'
@@ -131,7 +133,7 @@ export function getOSName(): string {
 /** Get the app version from system info. */
 export function getAppVersion(): string {
   const info = getSystemInfo()
-  return info.appVersion || info.wxVersion || ''
+  return info.appVersion || (info as any).wxVersion || ''
 }
 
 /** Check if the device has a notch / safe area. */
