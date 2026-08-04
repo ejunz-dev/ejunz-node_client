@@ -35,10 +35,6 @@
 
     "dev:desktop": "yarn workspace @ejunz/node-client-uniapp dev:desktop",
     "build:desktop": "yarn workspace @ejunz/node-client-uniapp build:desktop",
-    "dev:electron": "yarn workspace @ejunz/node-client-uniapp dev:electron",
-    "build:electron": "yarn workspace @ejunz/node-client-uniapp build:electron",
-    "build:electron:linux": "yarn workspace @ejunz/node-client-uniapp build:electron:linux",
-    "build:electron:mac": "yarn workspace @ejunz/node-client-uniapp build:electron:mac",
-    "build:electron:win": "yarn workspace @ejunz/node-client-uniapp build:electron:win"
+    "desktop:update": "yarn workspace @ejunz/node-client-uniapp desktop:update"
   }
 }
