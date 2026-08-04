@@ -58,11 +58,14 @@ jobs:
           # neu update downloads to uniapp/neutralino/bin/ as neutralino-{platform}_{arch}
           # neu build renames them to the configured binaryName
           NEU_BIN="$PWD/uniapp/neutralino/bin"
+          echo "NEU_BIN=$NEU_BIN"
+          ls -la "$NEU_BIN" 2>/dev/null || echo "bin dir not found"
           if [ -d "$NEU_BIN" ]; then
             for f in "$NEU_BIN"/neutralino-*; do
               [ -f "$f" ] || continue
               base=$(basename "$f")
               suffix="${base#neutralino-}"
+              echo "Copying $f -> $BINARY_NAME-$suffix"
               cp "$f" "$NEU_DIR/dist/$BINARY_NAME/$BINARY_NAME-$suffix"
               chmod +x "$NEU_DIR/dist/$BINARY_NAME/$BINARY_NAME-$suffix"
             done
