@@ -2,7 +2,7 @@
 set -e
 
 BINARY_NAME="ejunz-edge-desktop"
-DIST_DIR="uniapp/neutralino/dist/${BINARY_NAME}"
+DIST_DIR="${NEU_DIST_DIR:-uniapp/neutralino/dist/${BINARY_NAME}}"
 PKG_DIR="${1:-/tmp/packages}"
 mkdir -p "$PKG_DIR"
 
