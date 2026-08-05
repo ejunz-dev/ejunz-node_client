@@ -1,6 +1,6 @@
 {
   "name": "@ejunz/node-client-uniapp",
-  "version": "2.0.0",
+  "version": "1.1.2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -38,6 +38,7 @@
     "@dcloudio/uni-mp-toutiao": "3.0.0-alpha-5020320260731001",
     "@dcloudio/uni-mp-weixin": "3.0.0-alpha-5020320260731001",
     "@dcloudio/uni-quickapp-webview": "3.0.0-alpha-5020320260731001",
+    "@tauri-apps/plugin-http": "^2.5.9",
     "pinia": "^3.0.3",
     "vue": "^3.5.22"
   },
