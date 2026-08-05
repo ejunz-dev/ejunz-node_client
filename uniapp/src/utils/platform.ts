@@ -6,7 +6,7 @@
  * conditional rendering, prefer uni-app's `#ifdef` preprocessor comments.
  */
 
-export type UniPlatform = 'ios' | 'android' | 'h5' | 'tauri' | 'mp-weixin' | 'mp-alipay' | 'mp-baidu' | 'mp-toutiao' | 'mp-qq' | 'quickapp-webview' | 'app' | 'unknown'
+export type UniPlatform = 'ios' | 'android' | 'h5' | 'neutralino' | 'mp-weixin' | 'mp-alipay' | 'mp-baidu' | 'mp-toutiao' | 'mp-qq' | 'quickapp-webview' | 'app' | 'unknown'
 
 let cachedPlatform: UniPlatform | null = null
 let cachedSystemInfo: UniApp.GetSystemInfoResult | null = null
@@ -51,22 +51,23 @@ export function getPlatform(): UniPlatform {
   // #endif
   if (!cachedPlatform) cachedPlatform = 'unknown'
 
-  // Runtime override: detect Tauri desktop wrapper.
-  // Tauri serves the H5 build in a native WebView, so the build-time
-  // platform is 'h5'. Check for the Tauri runtime API at runtime.
+  // Runtime override: detect Neutralino desktop wrapper.
+  // Neutralino serves the H5 build in a native WebView, so the build-time
+  // platform is 'h5'. Check for the Neutralino runtime API at runtime.
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if ((cachedPlatform as UniPlatform) === 'h5' && isTauriRuntime()) {
-    cachedPlatform = 'tauri'
+  if ((cachedPlatform as UniPlatform) === 'h5' && isNeutralinoRuntime()) {
+    cachedPlatform = 'neutralino'
   }
 
   return cachedPlatform
 }
 
-/** Check if the Tauri native runtime API is available. */
-function isTauriRuntime(): boolean {
+/** Check if the Neutralino native runtime API is available. */
+function isNeutralinoRuntime(): boolean {
   try {
     return typeof window !== 'undefined' &&
-      (window as any).__TAURI_INTERNALS__ !== undefined
+      (window as any).__NL_OS !== undefined &&
+      (window as any).__NL_APPID !== undefined
   } catch {
     return false
   }
@@ -94,9 +95,9 @@ export function isH5(): boolean {
   return getPlatform() === 'h5'
 }
 
-/** Is the current platform Desktop (Tauri)? */
+/** Is the current platform Desktop (Neutralino)? */
 export function isDesktop(): boolean {
-  return getPlatform() === 'tauri'
+  return getPlatform() === 'neutralino'
 }
 
 /** Is the current platform a desktop OS (macOS/Windows/Linux)? */
