@@ -13,7 +13,7 @@ Standalone Vue 3 + TypeScript + Pinia client for the Ejunz Edge REST and `edge-w
 | mp-toutiao | Douyin/Toutiao Mini Program | ✅ |
 | mp-qq | QQ Mini Program | ✅ |
 | quickapp | Quick App (快应用) | ✅ |
-| Desktop (Tauri) | macOS / Windows / Linux | ✅ |
+| Desktop (Neutralino.js) | macOS / Windows / Linux | ✅ |
 
 ## Commands
 
@@ -49,9 +49,9 @@ yarn build:mp-qq       # QQ Mini Program build
 yarn dev:quickapp      # Quick App development
 yarn build:quickapp    # Quick App build
 
-# Desktop (Tauri)
-yarn dev:desktop       # Development (HMR via Vite + Tauri dev)
-yarn build:desktop     # Production build (native installer)
+# Desktop (Neutralino.js)
+yarn dev:desktop       # Development (HMR via Vite + Neutralino.js dev)
+yarn build:desktop     # Production build (portable package)
 ```
 
 ## Structure
@@ -79,7 +79,7 @@ Use `uni.getSystemInfoSync().platform` or the `#ifdef` preprocessor in `.vue` fi
 <!-- #endif -->
 ```
 
-> **Note:** Desktop (Tauri) uses runtime detection, not build-time `#ifdef`. Use `isDesktop()` from `@/utils/platform` instead.
+> **Note:** Desktop (Neutralino.js) uses runtime detection, not build-time `#ifdef`. Use `isDesktop()` from `@/utils/platform` instead.
 
 See the [uni-app conditional compilation docs](https://uniapp.dcloud.net.cn/tutorial/platform.html) for all available platform identifiers.
 
@@ -111,31 +111,31 @@ yarn dev:mp-weixin
 # Open the dist/build/mp-weixin directory in WeChat DevTools
 ```
 
-### Desktop (Tauri)
+### Desktop (Neutralino.js)
 
 ```bash
-# Development (HMR via Vite dev server + Tauri dev window)
+# Development (HMR via Vite dev server + Neutralino.js dev window)
 yarn dev:desktop
 
-# Production build (native installer)
+# Production build (portable package)
 yarn build:desktop
 ```
 
-The desktop app uses **Tauri** — a lightweight (~5 MB) Rust-based framework. It wraps the uni-app H5 build in a native OS webview.
+The desktop app uses **Neutralino.js** — a lightweight native webview framework. It wraps the uni-app H5 build in a native OS webview.
 
-- Window config (size, title, icon) is in `src-tauri/tauri.conf.json`
-- Tauri v2 with Rust backend
-- Builds produce native installers: `.AppImage`/`.deb` (Linux), `.dmg` (macOS), `.msi` (Windows)
+- Window config (size, title, icon) is in `neutralino/neutralino.config.json`
+- Native APIs are provided by Neutralino.js (`storage.*`, `filesystem.*`, etc.)
+- Builds produce portable packages: `.tar.gz` (Linux/macOS) and `.zip` (Windows)
 
-Runtime detection (Tauri is detected at runtime, not build-time):
+Runtime detection (Neutralino.js is detected at runtime, not build-time):
 
 ```typescript
 import { isDesktop, isDesktopOS } from '@/utils/platform'
 
 if (isDesktop()) {
-  // Running inside Tauri desktop window
+  // Running inside Neutralino.js desktop window
 } else if (isDesktopOS()) {
-  // Running on a desktop OS (macOS/Windows/Linux) but not in Tauri
+  // Running on a desktop OS (macOS/Windows/Linux) but not in Neutralino.js
 }
 ```
 
