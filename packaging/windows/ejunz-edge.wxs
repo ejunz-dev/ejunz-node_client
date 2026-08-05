@@ -27,19 +27,24 @@
     </Directory>
 
     <Feature Id="ProductFeature" Title="Ejunz Edge" Level="1">
-      <ComponentRef Id="ApplicationFiles" />
+      <ComponentRef Id="ApplicationExecutable" />
+      <ComponentRef Id="ApplicationResources" />
       <ComponentRef Id="StartMenuShortcut" />
       <ComponentRef Id="DesktopShortcut" />
     </Feature>
 
-    <Component Id="ApplicationFiles" Directory="INSTALLFOLDER" Guid="*">
+    <Component Id="ApplicationExecutable" Directory="INSTALLFOLDER" Guid="*">
       <File
         Id="ApplicationExe"
         Source="$(var.SourceDir)\ejunz-edge-desktop-win_x64.exe"
         KeyPath="yes" />
+    </Component>
+
+    <Component Id="ApplicationResources" Directory="INSTALLFOLDER" Guid="*">
       <File
         Id="ResourcesNeu"
-        Source="$(var.SourceDir)\resources.neu" />
+        Source="$(var.SourceDir)\resources.neu"
+        KeyPath="yes" />
     </Component>
 
     <Component Id="StartMenuShortcut" Directory="ApplicationProgramsFolder" Guid="*">
