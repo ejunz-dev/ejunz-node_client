@@ -1,1 +1,0 @@
-"use strict";const t=require("../common/vendor.js"),s=require("../utils/status.js"),e=t.defineComponent({__name:"StatusBadge",props:{status:{}},setup:e=>(e,a)=>({a:t.t(t.unref(s.statusLabel)(e.status)),b:t.unref(s.statusColor)(e.status),c:t.unref(s.statusColor)(e.status)+"22"})}),a=t._export_sfc(e,[["__scopeId","data-v-5d037a77"]]);wx.createComponent(a);

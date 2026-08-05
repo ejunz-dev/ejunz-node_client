@@ -48,7 +48,7 @@ jobs:
           set -euo pipefail
           version="${RELEASE_VERSION#v}"
           mkdir -p /tmp/release/linux
-          for package in uniapp/dist/electron/*; do
+          for package in app/dist/electron/*; do
             [ -f "$package" ] || continue
             case "$package" in
               *.rpm) cp "$package" "/tmp/release/linux/Ejunz Edge-${version}-1.x86_64.rpm" ;;
@@ -96,8 +96,8 @@ jobs:
         run: |
           $version = $env:RELEASE_VERSION.TrimStart('v')
           New-Item -ItemType Directory -Path release -Force | Out-Null
-          $exe = Get-ChildItem uniapp/dist/electron -Filter '*.exe' -File | Select-Object -First 1
-          $msi = Get-ChildItem uniapp/dist/electron -Filter '*.msi' -File | Select-Object -First 1
+          $exe = Get-ChildItem app/dist/electron -Filter '*.exe' -File | Select-Object -First 1
+          $msi = Get-ChildItem app/dist/electron -Filter '*.msi' -File | Select-Object -First 1
           if (-not $exe) { throw 'Electron setup executable was not produced' }
           if (-not $msi) { throw 'Electron MSI installer was not produced' }
           Copy-Item $exe.FullName "release/Ejunz Edge_${version}_x64-setup.exe"
@@ -136,7 +136,7 @@ jobs:
           set -euo pipefail
           version="${RELEASE_VERSION#v}"
           mkdir -p /tmp/release/macos
-          for package in uniapp/dist/electron/*.dmg; do
+          for package in app/dist/electron/*.dmg; do
             [ -f "$package" ] || continue
             name=$(basename "$package")
             case "$name" in
@@ -180,7 +180,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: h5-build
-          path: uniapp/dist/build/h5/
+          path: app/dist/build/h5/
           retention-days: 1
 
   publish:

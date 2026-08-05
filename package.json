@@ -4,7 +4,7 @@
   "private": true,
   "packageManager": "yarn@4.2.0",
   "workspaces": [
-    "uniapp"
+    "app"
   ],
   "scripts": {
     "typecheck": "yarn workspace @ejunz/node-client-uniapp typecheck",

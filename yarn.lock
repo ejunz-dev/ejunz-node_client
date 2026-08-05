@@ -1749,9 +1749,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ejunz/node-client-uniapp@workspace:uniapp":
+"@ejunz/node-client-uniapp@workspace:app":
   version: 0.0.0-use.local
-  resolution: "@ejunz/node-client-uniapp@workspace:uniapp"
+  resolution: "@ejunz/node-client-uniapp@workspace:app"
   dependencies:
     "@dcloudio/types": "npm:^3.4.32"
     "@dcloudio/uni-app": "npm:3.0.0-alpha-5020320260731001"

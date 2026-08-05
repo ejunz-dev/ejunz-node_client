@@ -1,9 +1,0 @@
-{
-  "navigationBarTitleText": "节点",
-  "usingComponents": {
-    "app-shell": "../../components/AppShell",
-    "page-header": "../../components/PageHeader",
-    "status-badge": "../../components/StatusBadge",
-    "empty-state": "../../components/EmptyState"
-  }
-}

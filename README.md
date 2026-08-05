@@ -98,14 +98,14 @@ yarn build:desktop
 
 The desktop app uses **Electron** to wrap the uni-app H5 build in a native OS webview.
 
-- Main process and preload bridge are in `uniapp/electron/`
+- Main process and preload bridge are in `app/electron/`
 - Persistent credentials use the uni-app H5 storage adapter
 - Builds produce `.AppImage`, `.deb`, `.rpm`, `.dmg`, `.exe`, and `.msi` installers
 
 ## Project Structure
 
 ```
-uniapp/               ← uni-app source (all platforms)
+app/               ← uni-app source (all platforms)
   src/
     pages/            ← Page components (login, dashboard, nodes, devices, settings)
     components/       ← Reusable UI components
@@ -123,14 +123,9 @@ uniapp/               ← uni-app source (all platforms)
   package.json        ← uni-app workspace dependencies
   README.md           ← Detailed uni-app documentation
 
-ui/                   ← Legacy React/Mantine UI (deprecated, replaced by uniapp/)
-desktop/              ← Legacy desktop app (deprecated)
-ios/                  ← Legacy Capacitor iOS project (deprecated)
-android/              ← Legacy Capacitor Android project (deprecated)
-capacitor.config.json ← Legacy Capacitor config (deprecated)
 ```
 
-> **Note:** The `ui/`, `desktop/`, `ios/`, and `android/` directories are legacy artifacts from the previous React + Capacitor stack. All new development uses the `uniapp/` directory, which now includes Electron desktop support alongside all other platforms.
+All client development now uses the `app/` directory. It contains the shared Vue 3 UI, platform builds, and Electron desktop shell.
 
 ## Edge API
 
@@ -154,7 +149,7 @@ The client manages the Edge server through its REST API:
 
 ## Platform-specific Code
 
-Use uni-app's conditional compilation (`#ifdef` / `#ifndef`) in `.vue` files, or the runtime platform utilities in `uniapp/src/utils/platform.ts`:
+Use uni-app's conditional compilation (`#ifdef` / `#ifndef`) in `.vue` files, or the runtime platform utilities in `app/src/utils/platform.ts`:
 
 ```typescript
 import { isApp, isMiniProgram, isH5, isDesktop } from '@/utils/platform'
@@ -170,4 +165,4 @@ if (isApp()) {
 }
 ```
 
-See [`uniapp/README.md`](uniapp/README.md) for detailed implementation documentation.
+See [`app/README.md`](app/README.md) for detailed implementation documentation.

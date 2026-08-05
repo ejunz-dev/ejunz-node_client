@@ -1,9 +1,0 @@
-{
-  "navigationBarTitleText": "设备",
-  "usingComponents": {
-    "app-shell": "../../components/AppShell",
-    "page-header": "../../components/PageHeader",
-    "empty-state": "../../components/EmptyState",
-    "device-switch": "../../components/DeviceSwitch"
-  }
-}

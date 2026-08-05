@@ -101,7 +101,7 @@ The Vite dev server proxies `/api/edge` requests to the Edge server (configurabl
 yarn build:app
 
 # Or use HBuilderX to run on device/emulator
-# Open the uniapp/ directory in HBuilderX → Run → Run on device
+# Open the app/ directory in HBuilderX → Run → Run on device
 ```
 
 ### WeChat Mini Program
