@@ -20,7 +20,6 @@ directories:
   output: dist/electron
 
 linux:
-  packageName: ejunz-edge
   category: Network;Utility
   icon: electron/icon.png
   maintainer: dev@ejunz.com
@@ -30,6 +29,14 @@ linux:
     - deb
     - rpm
   artifactName: "Ejunz Edge_${version}_${arch}.${ext}"
+
+deb:
+  packageName: ejunz-edge
+  maintainer: dev@ejunz.com
+
+rpm:
+  packageName: ejunz-edge
+  maintainer: dev@ejunz.com
 
 mac:
   category: public.app-category.utilities
