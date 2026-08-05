@@ -1,1 +1,0 @@
-"use strict";const e=require("../common/vendor.js"),t=e.defineComponent({__name:"StatCard",props:{label:{},value:{},accent:{}},setup:t=>(t,a)=>({a:e.t(t.label),b:e.t(t.value),c:e.s(t.accent?{color:t.accent}:void 0)})}),a=e._export_sfc(t,[["__scopeId","data-v-513c0a77"]]);wx.createComponent(a);

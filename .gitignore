@@ -38,17 +38,12 @@ core.*
 # npm lockfile (we use yarn)
 package-lock.json
 
-# Legacy desktop build artifacts
-desktop/bin/
-desktop/dist/
-desktop/frontend/dist/
-
 # Electron desktop build artifacts and local caches
-uniapp/dist/electron/
-uniapp/.cache/
+app/dist/electron/
+app/.cache/
 
 # uni-app build outputs
-uniapp/dist/
-uniapp/node_modules/
-uniapp/.env.local
-uniapp/.env.*.local
+app/dist/
+app/node_modules/
+app/.env.local
+app/.env.*.local

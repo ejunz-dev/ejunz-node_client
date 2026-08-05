@@ -1,7 +1,0 @@
-{
-  "navigationBarTitleText": "设置",
-  "usingComponents": {
-    "app-shell": "../../components/AppShell",
-    "page-header": "../../components/PageHeader"
-  }
-}

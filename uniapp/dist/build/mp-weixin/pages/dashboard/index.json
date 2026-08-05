@@ -1,9 +1,0 @@
-{
-  "navigationBarTitleText": "概览",
-  "usingComponents": {
-    "app-shell": "../../components/AppShell",
-    "stat-card": "../../components/StatCard",
-    "status-badge": "../../components/StatusBadge",
-    "empty-state": "../../components/EmptyState"
-  }
-}
