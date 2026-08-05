@@ -1,5 +1,6 @@
 appId: com.ejunz.edge.desktop
 productName: Ejunz Edge
+executableName: ejunz-edge-desktop
 copyright: Copyright © 2026 Ejunz
 
 asar: true
@@ -18,6 +19,7 @@ directories:
 
 linux:
   category: Network;Utility
+  syncDesktopName: true
   target:
     - AppImage
     - deb
