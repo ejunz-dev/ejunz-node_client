@@ -1,5 +1,3 @@
-import { isDesktop } from './platform'
-
 /** Append a query parameter to a URL string, handling existing query. */
 function setQueryParam(url: string, key: string, value: string): string {
   const separator = url.includes('?') ? '&' : '?'
@@ -16,10 +14,12 @@ export function normalizeServerUrl(value: string): string {
 export function buildApiUrl(serverUrl: string, path: string, token = ''): string {
   const base = normalizeServerUrl(serverUrl)
   const normalizedPath = path.startsWith('/') ? path : `/${path}`
-  // In H5 dev mode, use a relative URL so the Vite dev proxy handles the
-  // cross-origin request instead of the browser (avoids CORS errors).
-  // Skip this for Tauri desktop — there's no dev proxy, use direct URL.
-  if (!isDesktop() && typeof window !== 'undefined' && base && !base.startsWith(window.location.origin)) {
+  // In Vite dev mode, use a relative URL so the dev proxy handles cross-origin
+  // requests instead of the browser (avoids CORS errors). This applies to both
+  // H5 dev and Tauri dev (which shares the Vite dev server).
+  // In production (Tauri desktop or deployed H5), use the direct URL.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (import.meta.env.DEV && base && !base.startsWith(window.location.origin)) {
     let url = `${window.location.origin}${normalizedPath}`
     if (token) url = setQueryParam(url, 'token', token)
     return url
