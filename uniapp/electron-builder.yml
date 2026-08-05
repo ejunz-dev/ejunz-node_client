@@ -3,6 +3,8 @@ productName: Ejunz Edge
 executableName: ejunz-edge-desktop
 copyright: Copyright © 2026 Ejunz
 
+icon: electron/icon.png
+
 asar: true
 npmRebuild: false
 
@@ -19,6 +21,8 @@ directories:
 
 linux:
   category: Network;Utility
+  icon: electron/icon.png
+  maintainer: dev@ejunz.com
   syncDesktopName: true
   target:
     - AppImage
@@ -28,11 +32,13 @@ linux:
 
 mac:
   category: public.app-category.utilities
+  icon: electron/icon.png
   target:
     - dmg
   artifactName: "Ejunz Edge_${version}_${arch}.${ext}"
 
 win:
+  icon: electron/icon.ico
   target:
     - nsis
     - msi
