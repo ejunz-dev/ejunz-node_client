@@ -44,13 +44,14 @@ async function tauriRequest(url: string, options: Omit<UniApp.RequestOptions, 'u
   }
 
   // Invoke the custom Tauri Rust command — no npm imports needed.
-  const [status, text] = await (window as any).__TAURI_INTERNALS__.invoke<[number, string]>('http_request', {
+  const result = await (window as any).__TAURI_INTERNALS__.invoke('http_request', {
     url,
     method,
     headers: Object.keys(headers).length > 0 ? headers : null,
     body: body || null,
     timeout,
-  })
+  }) as [number, string]
+  const [status, text] = result
 
   let data: any
   try { data = JSON.parse(text) } catch { data = text }
