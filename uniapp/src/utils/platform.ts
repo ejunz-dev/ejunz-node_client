@@ -6,7 +6,7 @@
  * conditional rendering, prefer uni-app's `#ifdef` preprocessor comments.
  */
 
-export type UniPlatform = 'ios' | 'android' | 'h5' | 'neutralino' | 'mp-weixin' | 'mp-alipay' | 'mp-baidu' | 'mp-toutiao' | 'mp-qq' | 'quickapp-webview' | 'app' | 'unknown'
+export type UniPlatform = 'ios' | 'android' | 'h5' | 'electron' | 'mp-weixin' | 'mp-alipay' | 'mp-baidu' | 'mp-toutiao' | 'mp-qq' | 'quickapp-webview' | 'app' | 'unknown'
 
 let cachedPlatform: UniPlatform | null = null
 let cachedSystemInfo: UniApp.GetSystemInfoResult | null = null
@@ -51,23 +51,22 @@ export function getPlatform(): UniPlatform {
   // #endif
   if (!cachedPlatform) cachedPlatform = 'unknown'
 
-  // Runtime override: detect Neutralino desktop wrapper.
-  // Neutralino serves the H5 build in a native WebView, so the build-time
-  // platform is 'h5'. Check for the Neutralino runtime API at runtime.
+  // Runtime override: detect the Electron desktop wrapper.
+  // Electron serves the H5 build in a native WebView, so the build-time
+  // platform is 'h5'. Check for the preload bridge at runtime.
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if ((cachedPlatform as UniPlatform) === 'h5' && isNeutralinoRuntime()) {
-    cachedPlatform = 'neutralino'
+  if ((cachedPlatform as UniPlatform) === 'h5' && isElectronRuntime()) {
+    cachedPlatform = 'electron'
   }
 
   return cachedPlatform
 }
 
-/** Check if the Neutralino native runtime API is available. */
-function isNeutralinoRuntime(): boolean {
+/** Check if the Electron preload bridge is available. */
+function isElectronRuntime(): boolean {
   try {
     return typeof window !== 'undefined' &&
-      (window as any).__NL_OS !== undefined &&
-      (window as any).__NL_APPID !== undefined
+      (window as any).electronAPI !== undefined
   } catch {
     return false
   }
@@ -95,9 +94,9 @@ export function isH5(): boolean {
   return getPlatform() === 'h5'
 }
 
-/** Is the current platform Desktop (Neutralino)? */
+/** Is the current platform Electron desktop? */
 export function isDesktop(): boolean {
-  return getPlatform() === 'neutralino'
+  return getPlatform() === 'electron'
 }
 
 /** Is the current platform a desktop OS (macOS/Windows/Linux)? */

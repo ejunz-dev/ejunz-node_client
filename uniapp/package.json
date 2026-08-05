@@ -1,8 +1,11 @@
 {
   "name": "@ejunz/node-client-uniapp",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "private": true,
   "type": "module",
+  "description": "Ejunz Edge desktop and multi-platform client",
+  "author": "Ejunz",
+  "main": "electron/main.cjs",
   "scripts": {
     "dev:h5": "uni -p h5",
     "build:h5": "uni build -p h5",
@@ -24,9 +27,9 @@
     "build:mp-qq": "uni build -p mp-qq",
     "dev:quickapp": "uni -p quickapp-webview",
     "build:quickapp": "uni build -p quickapp-webview",
-    "dev:desktop": "cd neutralino && neu run",
-    "build:desktop": "yarn build:h5 && rm -rf neutralino/www && cp -r dist/build/h5 neutralino/www && cd neutralino && neu build --release",
-    "desktop:update": "cd neutralino && neu update",
+    "dev:desktop": "concurrently --kill-others-on-fail \"yarn dev:h5\" \"wait-on http://localhost:5175 && cross-env ELECTRON_START_URL=http://localhost:5175 electron electron/main.cjs\"",
+    "build:h5:electron": "cross-env ELECTRON_BUILD=1 yarn build:h5",
+    "build:desktop": "cross-env ELECTRON_CACHE=.cache/electron ELECTRON_BUILDER_CACHE=.cache/electron-builder yarn build:h5:electron && cross-env ELECTRON_CACHE=.cache/electron ELECTRON_BUILDER_CACHE=.cache/electron-builder electron-builder --config electron-builder.yml --publish never",
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
@@ -45,11 +48,15 @@
   "devDependencies": {
     "@dcloudio/types": "^3.4.32",
     "@dcloudio/vite-plugin-uni": "3.0.0-alpha-5020320260731001",
-    "@neutralinojs/neu": "^11.1.0",
     "@types/node": "^22.15.0",
+    "concurrently": "^10.0.4",
+    "cross-env": "^10.1.0",
+    "electron": "43.3.0",
+    "electron-builder": "26.15.3",
     "sass-embedded": "^1.89.2",
     "typescript": "^5.8.3",
     "vite": "^6.3.5",
-    "vue-tsc": "^2.2.10"
+    "vue-tsc": "^2.2.10",
+    "wait-on": "^9.1.0"
   }
 }

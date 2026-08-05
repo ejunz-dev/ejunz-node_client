@@ -1,0 +1,51 @@
+appId: com.ejunz.edge.desktop
+productName: Ejunz Edge
+copyright: Copyright © 2026 Ejunz
+
+asar: true
+npmRebuild: false
+
+electronDownload:
+  cache: .cache/electron
+
+files:
+  - electron/**
+  - dist/build/h5/**
+  - package.json
+
+directories:
+  output: dist/electron
+
+linux:
+  category: Network;Utility
+  target:
+    - AppImage
+    - deb
+    - rpm
+  artifactName: "Ejunz Edge_${version}_${arch}.${ext}"
+
+mac:
+  category: public.app-category.utilities
+  target:
+    - dmg
+  artifactName: "Ejunz Edge_${version}_${arch}.${ext}"
+
+win:
+  target:
+    - nsis
+    - msi
+  artifactName: "Ejunz Edge_${version}_${arch}.${ext}"
+  legalTrademarks: Ejunz
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Ejunz Edge
+
+msi:
+  perMachine: false
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
