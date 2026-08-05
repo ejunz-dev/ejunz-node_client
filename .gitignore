@@ -43,8 +43,10 @@ desktop/bin/
 desktop/dist/
 desktop/frontend/dist/
 
-# Desktop (Tauri)
-uniapp/src-tauri/target/
+# Desktop (Neutralino.js)
+uniapp/neutralino/bin/
+uniapp/neutralino/dist/
+uniapp/neutralino/www/
 
 # uni-app build outputs
 uniapp/dist/
