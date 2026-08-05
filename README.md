@@ -17,7 +17,7 @@ Built with **uni-app 3.x** (Vue 3 + TypeScript + Pinia) — one codebase for **a
 | mp-toutiao | Douyin/Toutiao Mini Program | ✅ |
 | mp-qq | QQ Mini Program | ✅ |
 | quickapp | Quick App (快应用) | ✅ |
-| Desktop (Tauri) | macOS / Windows / Linux | ✅ |
+| Desktop (Neutralino.js) | macOS / Windows / Linux | ✅ |
 
 ## Quick Start
 
@@ -86,7 +86,7 @@ yarn dev:quickapp
 yarn build:quickapp
 ```
 
-### Desktop (Tauri)
+### Desktop (Neutralino.js)
 
 ```bash
 # Development (HMR via Vite dev server)
@@ -96,11 +96,11 @@ yarn dev:desktop
 yarn build:desktop
 ```
 
-The desktop app uses **Tauri** — a lightweight (~5 MB) Rust-based framework. It wraps the uni-app H5 build in a native OS webview.
+The desktop app uses **Neutralino.js** — a lightweight native webview wrapper. It wraps the uni-app H5 build in a native OS webview.
 
-- Window config (size, title, icon) is in `uniapp/src-tauri/tauri.conf.json`
-- Tauri v2 with Rust backend
-- Builds produce native installers: `.AppImage`/`.deb` (Linux), `.dmg` (macOS), `.msi` (Windows)
+- Window config (size, title, icon) is in `uniapp/neutralino/neutralino.config.json`
+- Native APIs are provided by Neutralino.js (`storage.*`, `filesystem.*`, etc.)
+- Builds produce portable packages: `.tar.gz` (Linux/macOS) and `.zip` (Windows)
 
 ## Project Structure
 
@@ -115,12 +115,10 @@ uniapp/               ← uni-app source (all platforms)
     types/            ← TypeScript type definitions
     manifest.json     ← Platform configuration
     pages.json        ← Page routing and tab bar
-  src-tauri/          ← Tauri desktop app (Rust + config)
-    tauri.conf.json   ← Window size, title, icon, build config
-    Cargo.toml        ← Rust dependencies
-    src/              ← Rust source (main.rs, lib.rs)
-    capabilities/     ← Tauri v2 permissions
-    icons/            ← App icons
+  neutralino/         ← Neutralino.js desktop app
+    neutralino.config.json ← Window size, title, icon, build config
+    www/               ← Copied H5 build for local development
+    bin/               ← Downloaded platform runtime binaries
   vite.config.ts      ← Vite + uni-app plugin config
   package.json        ← uni-app workspace dependencies
   README.md           ← Detailed uni-app documentation
@@ -132,7 +130,7 @@ android/              ← Legacy Capacitor Android project (deprecated)
 capacitor.config.json ← Legacy Capacitor config (deprecated)
 ```
 
-> **Note:** The `ui/`, `desktop/`, `ios/`, and `android/` directories are legacy artifacts from the previous React + Capacitor + Neutralino stack. All new development uses the `uniapp/` directory, which now includes desktop (Tauri) support alongside all other platforms.
+> **Note:** The `ui/`, `desktop/`, `ios/`, and `android/` directories are legacy artifacts from the previous React + Capacitor + Neutralino stack. All new development uses the `uniapp/` directory, which now includes desktop (Neutralino.js) support alongside all other platforms.
 
 ## Edge API
 
@@ -164,7 +162,7 @@ import { isApp, isMiniProgram, isH5, isDesktop } from '@/utils/platform'
 if (isApp()) {
   // Native app-specific logic (iOS/Android)
 } else if (isDesktop()) {
-  // Desktop-specific logic (Tauri)
+  // Desktop-specific logic (Neutralino.js)
 } else if (isMiniProgram()) {
   // Mini-program specific logic
 } else if (isH5()) {
