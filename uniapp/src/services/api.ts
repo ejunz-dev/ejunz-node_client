@@ -30,28 +30,31 @@ function getDefaultTimeout(): number {
 }
 
 /**
- * Make an HTTP request using the Tauri HTTP plugin, bypassing WebView
+ * Make an HTTP request using a custom Tauri Rust command, bypassing WebView
  * CORS restrictions. Only used in the Tauri desktop production build.
  */
 async function tauriRequest(url: string, options: Omit<UniApp.RequestOptions, 'url'>): Promise<{ data: any; statusCode: number }> {
-  const { fetch } = await import('@tauri-apps/plugin-http')
   const method = (options.method || 'GET').toUpperCase()
   const headers: Record<string, string> = { ...(options.header || {}) as Record<string, string> }
   const timeout = options.timeout ?? 15000
 
-  const init: RequestInit & { connectTimeout?: number } = {
-    method,
-    headers,
-    connectTimeout: timeout,
-  }
-
+  let body: string | undefined
   if (options.data !== undefined && method !== 'GET') {
-    init.body = typeof options.data === 'string' ? options.data : JSON.stringify(options.data)
+    body = typeof options.data === 'string' ? options.data : JSON.stringify(options.data)
   }
 
-  const response = await fetch(url, init)
-  const data = await response.json()
-  return { data, statusCode: response.status }
+  // Invoke the custom Tauri Rust command — no npm imports needed.
+  const [status, text] = await (window as any).__TAURI_INTERNALS__.invoke<[number, string]>('http_request', {
+    url,
+    method,
+    headers: Object.keys(headers).length > 0 ? headers : null,
+    body: body || null,
+    timeout,
+  })
+
+  let data: any
+  try { data = JSON.parse(text) } catch { data = text }
+  return { data, statusCode: status }
 }
 
 export async function api<T>(path: string, options: Omit<UniApp.RequestOptions, 'url'> = {}): Promise<T> {
