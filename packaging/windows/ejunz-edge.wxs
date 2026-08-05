@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product
+    Id="*"
+    Name="Ejunz Edge"
+    Language="1033"
+    Version="$(var.AppVersion)"
+    Manufacturer="Ejunz"
+    UpgradeCode="{7D8A6E55-4B50-4F85-9D0C-4A7E6D9B9F12}">
+    <Package
+      InstallerVersion="500"
+      Compressed="yes"
+      InstallScope="perUser"
+      Platform="x64" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Ejunz Edge is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="LocalAppDataFolder">
+        <Directory Id="INSTALLFOLDER" Name="Ejunz Edge" />
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="Ejunz Edge" />
+      </Directory>
+      <Directory Id="DesktopFolder" />
+    </Directory>
+
+    <Feature Id="ProductFeature" Title="Ejunz Edge" Level="1">
+      <ComponentRef Id="ApplicationFiles" />
+      <ComponentRef Id="StartMenuShortcut" />
+      <ComponentRef Id="DesktopShortcut" />
+    </Feature>
+
+    <Component Id="ApplicationFiles" Directory="INSTALLFOLDER" Guid="*">
+      <File
+        Id="ApplicationExe"
+        Source="$(var.SourceDir)\ejunz-edge-desktop-win_x64.exe"
+        KeyPath="yes" />
+      <File
+        Id="ResourcesNeu"
+        Source="$(var.SourceDir)\resources.neu" />
+    </Component>
+
+    <Component Id="StartMenuShortcut" Directory="ApplicationProgramsFolder" Guid="*">
+      <Shortcut
+        Id="StartMenuShortcut"
+        Name="Ejunz Edge"
+        Target="[INSTALLFOLDER]ejunz-edge-desktop-win_x64.exe"
+        WorkingDirectory="INSTALLFOLDER" />
+      <RemoveFolder Id="RemoveApplicationProgramsFolder" On="uninstall" />
+      <RegistryValue
+        Root="HKCU"
+        Key="Software\Ejunz\Ejunz Edge"
+        Name="StartMenuShortcut"
+        Type="integer"
+        Value="1"
+        KeyPath="yes" />
+    </Component>
+
+    <Component Id="DesktopShortcut" Directory="DesktopFolder" Guid="*">
+      <Shortcut
+        Id="DesktopShortcut"
+        Name="Ejunz Edge"
+        Target="[INSTALLFOLDER]ejunz-edge-desktop-win_x64.exe"
+        WorkingDirectory="INSTALLFOLDER" />
+      <RegistryValue
+        Root="HKCU"
+        Key="Software\Ejunz\Ejunz Edge"
+        Name="DesktopShortcut"
+        Type="integer"
+        Value="1"
+        KeyPath="yes" />
+    </Component>
+  </Product>
+</Wix>
