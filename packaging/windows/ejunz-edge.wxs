@@ -33,7 +33,7 @@
       <ComponentRef Id="DesktopShortcut" />
     </Feature>
 
-    <Component Id="ApplicationExecutable" Directory="INSTALLFOLDER" Guid="*">
+    <Component Id="ApplicationExecutable" Directory="INSTALLFOLDER" Guid="{A1C14E40-2C9A-4E0B-91C7-7B1E0E8F6C10}">
       <File
         Id="ApplicationExe"
         Source="$(var.SourceDir)\ejunz-edge-desktop-win_x64.exe" />
@@ -46,7 +46,7 @@
         KeyPath="yes" />
     </Component>
 
-    <Component Id="ApplicationResources" Directory="INSTALLFOLDER" Guid="*">
+    <Component Id="ApplicationResources" Directory="INSTALLFOLDER" Guid="{F5E4B1A6-0D8D-4C50-8F7F-4B03E4D4F9B2}">
       <File
         Id="ResourcesNeu"
         Source="$(var.SourceDir)\resources.neu" />
