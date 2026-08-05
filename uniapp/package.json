@@ -5,6 +5,7 @@
   "type": "module",
   "description": "Ejunz Edge desktop and multi-platform client",
   "author": "Ejunz",
+  "desktopName": "ejunz-edge-desktop",
   "main": "electron/main.cjs",
   "scripts": {
     "dev:h5": "uni -p h5",
