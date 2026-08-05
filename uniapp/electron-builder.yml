@@ -20,6 +20,7 @@ directories:
   output: dist/electron
 
 linux:
+  packageName: ejunz-edge
   category: Network;Utility
   icon: electron/icon.png
   maintainer: dev@ejunz.com
