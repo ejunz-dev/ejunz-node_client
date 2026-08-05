@@ -51,6 +51,7 @@
         Id="ResourcesNeu"
         Source="$(var.SourceDir)\resources.neu" />
       <RemoveFile Id="RemoveApplicationFiles" Name="*" On="uninstall" />
+      <RemoveFolder Id="RemoveInstallFolder" On="uninstall" />
       <RegistryValue
         Root="HKCU"
         Key="Software\Ejunz\Ejunz Edge"
