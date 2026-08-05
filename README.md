@@ -17,7 +17,7 @@ Built with **uni-app 3.x** (Vue 3 + TypeScript + Pinia) — one codebase for **a
 | mp-toutiao | Douyin/Toutiao Mini Program | ✅ |
 | mp-qq | QQ Mini Program | ✅ |
 | quickapp | Quick App (快应用) | ✅ |
-| Desktop (Neutralino.js) | macOS / Windows / Linux | ✅ |
+| Desktop (Electron) | macOS / Windows / Linux | ✅ |
 
 ## Quick Start
 
@@ -86,21 +86,21 @@ yarn dev:quickapp
 yarn build:quickapp
 ```
 
-### Desktop (Neutralino.js)
+### Desktop (Electron)
 
 ```bash
 # Development (HMR via Vite dev server)
 yarn dev:desktop
 
-# Production build
+# Production installers
 yarn build:desktop
 ```
 
-The desktop app uses **Neutralino.js** — a lightweight native webview wrapper. It wraps the uni-app H5 build in a native OS webview.
+The desktop app uses **Electron** to wrap the uni-app H5 build in a native OS webview.
 
-- Window config (size, title, icon) is in `uniapp/neutralino/neutralino.config.json`
-- Native APIs are provided by Neutralino.js (`storage.*`, `filesystem.*`, etc.)
-- Builds produce portable packages: `.tar.gz` (Linux/macOS) and `.zip` (Windows)
+- Main process and preload bridge are in `uniapp/electron/`
+- Persistent credentials use the uni-app H5 storage adapter
+- Builds produce `.AppImage`, `.deb`, `.rpm`, `.dmg`, `.exe`, and `.msi` installers
 
 ## Project Structure
 
@@ -115,22 +115,22 @@ uniapp/               ← uni-app source (all platforms)
     types/            ← TypeScript type definitions
     manifest.json     ← Platform configuration
     pages.json        ← Page routing and tab bar
-  neutralino/         ← Neutralino.js desktop app
-    neutralino.config.json ← Window size, title, icon, build config
-    www/               ← Copied H5 build for local development
-    bin/               ← Downloaded platform runtime binaries
+  electron/           ← Electron desktop main process and preload bridge
+    main.cjs           ← Window lifecycle and H5 loading
+    preload.cjs        ← Isolated renderer bridge
+  electron-builder.yml ← Desktop installer targets
   vite.config.ts      ← Vite + uni-app plugin config
   package.json        ← uni-app workspace dependencies
   README.md           ← Detailed uni-app documentation
 
 ui/                   ← Legacy React/Mantine UI (deprecated, replaced by uniapp/)
-desktop/              ← Legacy Neutralino.js desktop app (deprecated)
+desktop/              ← Legacy desktop app (deprecated)
 ios/                  ← Legacy Capacitor iOS project (deprecated)
 android/              ← Legacy Capacitor Android project (deprecated)
 capacitor.config.json ← Legacy Capacitor config (deprecated)
 ```
 
-> **Note:** The `ui/`, `desktop/`, `ios/`, and `android/` directories are legacy artifacts from the previous React + Capacitor + Neutralino stack. All new development uses the `uniapp/` directory, which now includes desktop (Neutralino.js) support alongside all other platforms.
+> **Note:** The `ui/`, `desktop/`, `ios/`, and `android/` directories are legacy artifacts from the previous React + Capacitor stack. All new development uses the `uniapp/` directory, which now includes Electron desktop support alongside all other platforms.
 
 ## Edge API
 
@@ -162,7 +162,7 @@ import { isApp, isMiniProgram, isH5, isDesktop } from '@/utils/platform'
 if (isApp()) {
   // Native app-specific logic (iOS/Android)
 } else if (isDesktop()) {
-  // Desktop-specific logic (Neutralino.js)
+  // Desktop-specific logic (Electron)
 } else if (isMiniProgram()) {
   // Mini-program specific logic
 } else if (isH5()) {

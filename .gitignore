@@ -43,10 +43,9 @@ desktop/bin/
 desktop/dist/
 desktop/frontend/dist/
 
-# Desktop (Neutralino.js)
-uniapp/neutralino/bin/
-uniapp/neutralino/dist/
-uniapp/neutralino/www/
+# Electron desktop build artifacts and local caches
+uniapp/dist/electron/
+uniapp/.cache/
 
 # uni-app build outputs
 uniapp/dist/

@@ -13,7 +13,7 @@ Standalone Vue 3 + TypeScript + Pinia client for the Ejunz Edge REST and `edge-w
 | mp-toutiao | Douyin/Toutiao Mini Program | ✅ |
 | mp-qq | QQ Mini Program | ✅ |
 | quickapp | Quick App (快应用) | ✅ |
-| Desktop (Neutralino.js) | macOS / Windows / Linux | ✅ |
+| Desktop (Electron) | macOS / Windows / Linux | ✅ |
 
 ## Commands
 
@@ -49,9 +49,9 @@ yarn build:mp-qq       # QQ Mini Program build
 yarn dev:quickapp      # Quick App development
 yarn build:quickapp    # Quick App build
 
-# Desktop (Neutralino.js)
-yarn dev:desktop       # Development (HMR via Vite + Neutralino.js dev)
-yarn build:desktop     # Production build (portable package)
+# Desktop (Electron)
+yarn dev:desktop       # Development (HMR via Vite + Electron)
+yarn build:desktop     # Production installers
 ```
 
 ## Structure
@@ -79,7 +79,7 @@ Use `uni.getSystemInfoSync().platform` or the `#ifdef` preprocessor in `.vue` fi
 <!-- #endif -->
 ```
 
-> **Note:** Desktop (Neutralino.js) uses runtime detection, not build-time `#ifdef`. Use `isDesktop()` from `@/utils/platform` instead.
+> **Note:** Desktop (Electron) uses runtime detection, not build-time `#ifdef`. Use `isDesktop()` from `@/utils/platform` instead.
 
 See the [uni-app conditional compilation docs](https://uniapp.dcloud.net.cn/tutorial/platform.html) for all available platform identifiers.
 
@@ -111,31 +111,31 @@ yarn dev:mp-weixin
 # Open the dist/build/mp-weixin directory in WeChat DevTools
 ```
 
-### Desktop (Neutralino.js)
+### Desktop (Electron)
 
 ```bash
-# Development (HMR via Vite dev server + Neutralino.js dev window)
+# Development (HMR via Vite dev server + Electron dev window)
 yarn dev:desktop
 
-# Production build (portable package)
+# Production build (native installers)
 yarn build:desktop
 ```
 
-The desktop app uses **Neutralino.js** — a lightweight native webview framework. It wraps the uni-app H5 build in a native OS webview.
+The desktop app uses **Electron** to wrap the uni-app H5 build in a native OS webview.
 
-- Window config (size, title, icon) is in `neutralino/neutralino.config.json`
-- Native APIs are provided by Neutralino.js (`storage.*`, `filesystem.*`, etc.)
-- Builds produce portable packages: `.tar.gz` (Linux/macOS) and `.zip` (Windows)
+- Window config and preload bridge are in `electron/main.cjs` and `electron/preload.cjs`
+- Persistent credentials use the uni-app H5 storage adapter
+- Builds produce `.AppImage`, `.deb`, `.rpm`, `.dmg`, `.exe`, and `.msi` installers
 
-Runtime detection (Neutralino.js is detected at runtime, not build-time):
+Runtime detection (Electron is detected at runtime, not build-time):
 
 ```typescript
 import { isDesktop, isDesktopOS } from '@/utils/platform'
 
 if (isDesktop()) {
-  // Running inside Neutralino.js desktop window
+  // Running inside Electron desktop window
 } else if (isDesktopOS()) {
-  // Running on a desktop OS (macOS/Windows/Linux) but not in Neutralino.js
+  // Running on a desktop OS (macOS/Windows/Linux) but not in Electron
 }
 ```
 

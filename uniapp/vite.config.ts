@@ -28,6 +28,9 @@ export default defineConfig(({ mode }) => {
     },
   }
 
+  // Electron loads the production H5 bundle from file://.
+  if (process.env.ELECTRON_BUILD === '1') config.base = './'
+
   // App platform (iOS/Android) specific optimizations
   if (platform === 'app') {
     config.build = {
