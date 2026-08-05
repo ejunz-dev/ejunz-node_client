@@ -1,6 +1,6 @@
 import { clearCredentials, loadCredentials, saveCredentials, type SavedCredentials } from './storage'
 import { buildApiUrl, buildEdgeWsUrl, normalizeServerUrl } from '@/utils/url'
-import { isMiniProgram, isApp } from '@/utils/platform'
+import { isDesktop, isMiniProgram, isApp } from '@/utils/platform'
 import type { AuthConfig, Device, EdgeNode, EdgeStatus, UpstreamConfig } from '@/types/edge'
 
 let credentials: SavedCredentials = { serverUrl: '', username: '', password: '' }
@@ -29,12 +29,53 @@ function getDefaultTimeout(): number {
   return 15000
 }
 
+/**
+ * Make an HTTP request using the Tauri HTTP plugin, bypassing WebView
+ * CORS restrictions. Only used in the Tauri desktop production build.
+ */
+async function tauriRequest(url: string, options: Omit<UniApp.RequestOptions, 'url'>): Promise<{ data: any; statusCode: number }> {
+  const { fetch } = await import('@tauri-apps/plugin-http')
+  const method = (options.method || 'GET').toUpperCase()
+  const headers: Record<string, string> = { ...(options.header || {}) as Record<string, string> }
+  const timeout = options.timeout ?? 15000
+
+  const init: RequestInit & { connectTimeout?: number } = {
+    method,
+    headers,
+    connectTimeout: timeout,
+  }
+
+  if (options.data !== undefined && method !== 'GET') {
+    init.body = typeof options.data === 'string' ? options.data : JSON.stringify(options.data)
+  }
+
+  const response = await fetch(url, init)
+  const data = await response.json()
+  return { data, statusCode: response.status }
+}
+
 export async function api<T>(path: string, options: Omit<UniApp.RequestOptions, 'url'> = {}): Promise<T> {
   if (!credentials.serverUrl) throw new ApiError(0, '未连接到 Edge 服务器')
   const url = buildApiUrl(credentials.serverUrl, path, credentials.password)
   const headers: Record<string, string> = { ...(options.header || {}) }
   if (options.data !== undefined && !headers['Content-Type']) headers['Content-Type'] = 'application/json'
   const timeout = options.timeout ?? getDefaultTimeout()
+
+  // In Tauri desktop, use the HTTP plugin to bypass WebView CORS restrictions.
+  if (isDesktop()) {
+    try {
+      const response = await tauriRequest(url, { ...options, header: headers, timeout })
+      const body = response.data as any
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw new ApiError(response.statusCode, body?.error || `HTTP ${response.statusCode}`)
+      }
+      return body as T
+    } catch (error) {
+      if (error instanceof ApiError) throw error
+      throw new ApiError(0, error instanceof Error ? error.message : '网络请求失败')
+    }
+  }
+
   return new Promise<T>((resolve, reject) => {
     uni.request({
       ...options,
