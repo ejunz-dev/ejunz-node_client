@@ -4,7 +4,11 @@
   "private": true,
   "type": "module",
   "description": "Ejunz Edge desktop and multi-platform client",
-  "author": "Ejunz",
+  "homepage": "https://github.com/ejunz-dev/ejunz-node_client",
+  "author": {
+    "name": "Ejunz",
+    "email": "dev@ejunz.com"
+  },
   "desktopName": "ejunz-edge-desktop",
   "main": "electron/main.cjs",
   "scripts": {
