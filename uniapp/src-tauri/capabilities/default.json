@@ -1,9 +1,0 @@
-{
-  "identifier": "default",
-  "description": "Default capabilities for Ejunz Edge",
-  "windows": ["main"],
-  "permissions": [
-    "core:default",
-    "opener:default"
-  ]
-}

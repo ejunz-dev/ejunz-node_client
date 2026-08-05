@@ -16,8 +16,8 @@ export function buildApiUrl(serverUrl: string, path: string, token = ''): string
   const normalizedPath = path.startsWith('/') ? path : `/${path}`
   // In Vite dev mode, use a relative URL so the dev proxy handles cross-origin
   // requests instead of the browser (avoids CORS errors). This applies to both
-  // H5 dev and Tauri dev (which shares the Vite dev server).
-  // In production (Tauri desktop or deployed H5), use the direct URL.
+  // H5 dev and Neutralino.js dev (which shares the Vite dev server).
+  // In production (Neutralino.js desktop or deployed H5), use the direct URL.
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (import.meta.env.DEV && base && !base.startsWith(window.location.origin)) {
     let url = `${window.location.origin}${normalizedPath}`
