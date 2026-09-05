@@ -1,6 +1,6 @@
 # Ejunz Edge Client
 
-Multi-platform client for connecting to an `ejunz-node` **Edge** server, managing remote nodes, and controlling Zigbee devices.
+Multi-platform client for connecting to an [ejunz-node](https://github.com/ejunz-dev/ejunz-node) **Edge** server, managing remote nodes, and controlling Zigbee devices.
 
 Built with **uni-app 3.x** (Vue 3 + TypeScript + Pinia) — one codebase for **all platforms**.
 
@@ -166,3 +166,10 @@ if (isApp()) {
 ```
 
 See [`app/README.md`](app/README.md) for detailed implementation documentation.
+
+## Related
+
+- [ejunz-node](https://github.com/ejunz-dev/ejunz-node) – the Edge server this client connects to
+- [ejunz-mfs](https://github.com/ejunz-dev/ejunz-mfs) – Microsoft Flight Simulator 2024 overlay
+- [ejunz-projection](https://github.com/ejunz-dev/ejunz-projection) – CS2 GSI projection overlay
+- [Ejunz](https://github.com/ejunz-dev/Ejunz) – knowledge management & learning platform
