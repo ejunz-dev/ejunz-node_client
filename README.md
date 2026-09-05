@@ -142,10 +142,10 @@ The client manages the Edge server through its REST API:
 | GET/POST | `/api/edge/auth-config` | Authentication configuration |
 | GET/POST | `/api/edge/upstream` | Upstream connection configuration |
 
-## Connection Addresses
+## Connecting
 
-- LAN Edge: `http://192.0.2.1:5283`
-- Remote (via FRP): `http://edge.example.com:10031`
+In the login screen, enter the address of your Edge server (a LAN address or a remote
+HTTPS address) plus optional credentials, then connect.
 
 ## Platform-specific Code
 
