@@ -166,10 +166,3 @@ if (isApp()) {
 ```
 
 See [`app/README.md`](app/README.md) for detailed implementation documentation.
-
-## Related
-
-- [ejunz-node](https://github.com/ejunz-dev/ejunz-node) – the Edge server this client connects to
-- [ejunz-mfs](https://github.com/ejunz-dev/ejunz-mfs) – Microsoft Flight Simulator 2024 overlay
-- [ejunz-projection](https://github.com/ejunz-dev/ejunz-projection) – CS2 GSI projection overlay
-- [Ejunz](https://github.com/ejunz-dev/Ejunz) – knowledge management & learning platform
